@@ -1,5 +1,23 @@
 %%%% -*- Mode: Prolog -*-
 
+% graph/1 identifies a graph
+
+graph(_).
+
+
+
+% arc/1 identifies an arc
+
+arc(_).
+
+
+
+% vertex/1 identifies a vertex
+
+vertex(_).
+
+
+
 % new_graph/1 Adds a graph to the knowledge base if not already existing.
 
 new_graph(G) :- graph(G), !.
@@ -9,7 +27,9 @@ new_graph(G) :- assert(graph(G)), !.
 % delete_graph/1 Removes a graph and all his nodes and arches form the
 % knowledge base
 
-% TODO
+delete_graph(G) :- retractall(arc(G, _, _, _)),
+		   retractall(vertex(G, _)),
+		   retractall(graph(G)).
 
 
 
@@ -71,7 +91,7 @@ neighbors(G, V, Ns) :- vertex(G, V),
 
 
 % adjs/3 true when V is a vertex in G and Vs is a list of all the
-% adjacent vertexes (in a non oriented graph interpretation)
+% adjacent vertices (in a non oriented graph interpretation)
 
 adjs(G, V, Vs) :- vertex(G, V),
 		  findall(vertex(G, N), arc(G, V, N, W), From),
@@ -80,6 +100,12 @@ adjs(G, V, Vs) :- vertex(G, V),
 
 
 
-% list_arcs/1 prints the list of all
+% list_arcs/1 prints the list of all arcs in G
 
-list_arcs(G) :- listing(vertex(G, _)).
+list_arcs(G) :- listing(arcs(G, _, _, _)).
+
+
+
+% list_graph/1 prints the list of all vertices and arcs
+
+list_graph(G) :- list_arcs(G), list_vertices(G).
