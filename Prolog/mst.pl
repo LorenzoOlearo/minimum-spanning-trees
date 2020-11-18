@@ -8,25 +8,6 @@
 % during execution (using assert/1 and/or retract/1).
 :- dynamic graph/1, vertex/2, arc/4.
 
-
-
-% graph/1 identifies a graph
-
-graph(_).
-
-
-
-% arc/1 identifies an arc
-
-arc(_, _, _, _).
-
-
-% vertex/1 identifies a vertex
-
-vertex(_, _).
-
-
-
 % new_graph/1 Adds a graph to the knowledge base if not already existing.
 
 new_graph(G) :- graph(G), !.
@@ -59,7 +40,8 @@ new_vertex(G, V) :-
 
 % vertices/2 True when Vs is a list of every vertex in G
 
-vertices(G, Vs) :- findall(V, vertex(G, V), Vs).
+%vertices(G, Vs) :- findall(V, vertex(G, V), Vs).
+vertices(G, Vs) :- findall(vertex(G, V), vertex(G, V), Vs).
 
 
 
@@ -92,10 +74,8 @@ new_arc(G, U, V) :- new_arc(G, U, V, 1).
 
 % arcs/2 true when Es is a list of every arcs in a graph G
 
-% arcs(G, Es) :- findall(arc(G, _, _, _), arc(G, _, _, _), Es).
-% arcs(G, Es) :- findall(arc(G, V, U, W), arc(G, V, U, W), Es).
-arcs(G, Es) :- findall(arc(G, _, _, _), arc(G, _, _, _), Es).
-% probably the second one works better, not sure
+arcs(G, Es) :- findall(arc(G, V, U, W), arc(G, V, U, W), Es).
+
 
 
 
@@ -116,6 +96,15 @@ adjs(G, V, Vs) :-
     findall(vertex(G, N), arc(G, V, N, W), From),
     findall(vertex(G, N), arc(G, N, V, W), To),
     append(From, To, Vs).
+
+
+
+% adjs_oriented/3 true when V is a vertex in G and Vs is a list of all the 
+% adjacent vertices (in a oriented graph interpretation)
+
+adjs(G, V, Vs) :-
+    vertex(G, V),
+    findall(vertex(G, N), arc(G, V, N, W), Vs),
 
 
 
