@@ -1,5 +1,7 @@
 %%%% -*- Mode: prolog -*-
 
+:- dynamic graph/1, vertex/2, arc/4.
+
 graph(gregor).
 
 vertex(gregor, a).
