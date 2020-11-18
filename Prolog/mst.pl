@@ -4,7 +4,7 @@
 %   TODO: check what new_graph/1 is asserting in the knowledge base.
 
 
-% Informs the interpreter that the definition of the predicate(s) may change
+% Informs the interpreter that the definition of the predicates may change
 % during execution (using assert/1 and/or retract/1).
 :- dynamic graph/1, vertex/2, arc/4.
 
@@ -38,7 +38,9 @@ new_graph(G) :- assert(graph(G)), !.
 % base
 
 delete_graph(G) :-
-    retractall(arc(G, _, _, _)), retractall(vertex(G, _)), retractall(graph(G)).
+    retractall(arc(G, _, _, _)),
+    retractall(vertex(G, _)),
+    retractall(graph(G)).
 
 
 
@@ -46,9 +48,12 @@ delete_graph(G) :-
 % graph is not in the knowledge base
 
 new_vertex(G, V) :-
-    graph(G), vertex(G, V), !.
+    graph(G),
+    vertex(G, V), !.
 
-new_vertex(G, V) :- graph(G), assert(vertex(G, V)), !.
+new_vertex(G, V) :-
+    graph(G),
+    assert(vertex(G, V)), !.
 
 
 
@@ -68,10 +73,14 @@ list_vertices(G) :- listing(vertex(G, _)).
 % in the knowledge base
 
 new_arc(G, U, V, Weight) :-
-    graph(G), vertex(G, U), vertex(G, V), arc(G, U, V, Weight), !.
+    graph(G),
+    vertex(G, U), vertex(G, V),
+    arc(G, U, V, Weight), !.
 
 new_arc(G, U, V, Weight) :-
-    graph(G), vertex(G, U), vertex(G, V), assert(arc(G, U, V, Weight)), !.
+    graph(G),
+    vertex(G, U), vertex(G, V),
+    assert(arc(G, U, V, Weight)), !.
 
 
 % new_arc/3 adds a weighted arc with weight 1 (an edge according to graph
@@ -94,7 +103,8 @@ arcs(G, Es) :- findall(arc(G, _, _, _), arc(G, _, _, _), Es).
 % from V
 
 neighbors(G, V, Ns) :-
-    vertex(G, V), findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
+    vertex(G, V),
+    findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 
 
 
@@ -117,4 +127,6 @@ list_arcs(G) :- listing(arc(G, _, _, _)).
 
 % list_graph/1 prints the list of all vertices and arcs
 
-list_graph(G) :- list_arcs(G), list_vertices(G).
+list_graph(G) :-
+    list_arcs(G),
+    list_vertices(G).
