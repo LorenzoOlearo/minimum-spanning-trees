@@ -1,12 +1,18 @@
 %%%% -*- Mode: Prolog -*-
 
-%   TODO: check new_vertex/2 not asserting the new vertex in the knowledge base.
-%   TODO: check what new_graph/1 is asserting in the knowledge base.
+% Do not autoload from autoload libraries
+% autoload(explicit).
+
+
+% Load the Swipl's library that parses and generates CSV data
+use_module(library(csv)).
+
 
 
 % Informs the interpreter that the definition of the predicates may change
 % during execution (using assert/1 and/or retract/1).
-:- dynamic graph/1, vertex/2, arc/4.
+
+
 
 % new_graph/1 Adds a graph to the knowledge base if not already existing.
 
@@ -56,12 +62,14 @@ list_vertices(G) :- listing(vertex(G, _)).
 
 new_arc(G, U, V, Weight) :-
     graph(G),
-    vertex(G, U), vertex(G, V),
+    vertex(G, U),
+    vertex(G, V),
     arc(G, U, V, Weight), !.
 
 new_arc(G, U, V, Weight) :-
     graph(G),
-    vertex(G, U), vertex(G, V),
+    vertex(G, U),
+    vertex(G, V),
     assert(arc(G, U, V, Weight)), !.
 
 
@@ -74,8 +82,9 @@ new_arc(G, U, V) :- new_arc(G, U, V, 1).
 
 % arcs/2 true when Es is a list of every arcs in a graph G
 
-arcs(G, Es) :- findall(arc(G, V, U, W), arc(G, V, U, W), Es).
-
+arcs(G, Es) :-
+    graph(G),
+    findall(arc(G, V, U, W), arc(G, V, U, W), Es).
 
 
 
@@ -102,9 +111,9 @@ adjs(G, V, Vs) :-
 % adjs_oriented/3 true when V is a vertex in G and Vs is a list of all the 
 % adjacent vertices (in a oriented graph interpretation)
 
-adjs(G, V, Vs) :-
+adjs_oriented(G, V, Vs) :-
     vertex(G, V),
-    findall(vertex(G, N), arc(G, V, N, W), Vs),
+    findall(vertex(G, N), arc(G, V, N, _), Vs).
 
 
 
@@ -119,3 +128,58 @@ list_arcs(G) :- listing(arc(G, _, _, _)).
 list_graph(G) :-
     list_arcs(G),
     list_vertices(G).
+
+
+
+% read_graph/2 creates a new graph G and its arcs and verices according
+% to csv file FileName with tabulation as separator
+
+read_graph(G, FileName) :-
+    csv_read_file(FileName, Rows, [separator(0'\t)]),
+    new_graph_from_rows(G, Rows).
+
+
+
+% new_graph_from_rows/2 support procedure to create a graph G given a list in
+% the format[row(V, U, W)] where V is source vertex, U is destination vertex
+% and W is weight of the arc between the two
+
+new_graph_from_rows(G, []) :- new_graph(G), !.
+
+new_graph_from_rows(G, [Row | Rows]) :-
+    Row =.. [row, V, U, W],
+    new_graph(G),
+    new_vertex(G, V),
+    new_vertex(G, U),
+    new_arc(G, V, U, W),
+    new_graph_from_rows(G, Rows).
+
+
+% write_graph/3 writes a graph G along with its arcs and vertices to a CSV file
+% represented by FileName
+
+write_graph(G, FileName, graph) :-
+    arcs(G, Arcs),
+    write_arcs_in_rows(Arcs, Rows),
+    csv_write_file(FileName, Rows, [separator(0'\t)]).
+
+write_graph(G, FileName, edges) :-
+    arcs(G, Arcs),
+    write_arcs_in_rows(Arcs, Rows),
+    csv_write_file(FileName, Rows, [separator(0'\t)]).
+
+write_graph(G, FileName) :- write_graph(G, FileName, graph).
+
+
+
+% write_graph_in_rows/2 support predicate for write_graph/2, given a list with
+% the all the arcs of the graph it creates a formatted list where each entry is
+% the predicate row/3 and its terms are in the order: the source vertex V, the
+% destination vertex U and the weight of the arc between the two
+
+write_arcs_in_rows([], []) :- !.
+
+write_arcs_in_rows([Arc | Arcs], [Row | Rows]) :-
+    Arc =.. [_, _ | TRow],
+    Row =.. [row | TRow],
+    write_arcs_in_rows(Arcs, Rows).
