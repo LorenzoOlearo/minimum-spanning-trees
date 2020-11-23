@@ -1,33 +1,68 @@
+:-dynamic vertex_key/3, previous/3.
+
+
 mst_prim(G, Source) :-
-	new_heap(h),
-	neighbors(G, Source, Ns),
-	heap_add_neighbors(h, Source, Ns)
-	heap_extract(h, K, N),
-	add_vertex_key(K, N, Source, Destination),
-	mst_prim(G, Destination).
-	
-heap_add_neighbors(H, _, []) :- heap(H, _), !. 
-	
-heap_add_neighbors(H, Source, [N | Ns]) :-
-	N =.. [arc, Graph, U, Source, W],
-	previous(Graph, Source, U), !,
-	heap_add_neighbors(H, Source, Ns).
-	
-heap_add_neighbors(H, Source, [N | Ns]) :-
-	N =.. [arc, Graph, Source, U, W],
-	previous(Graph, Source, U), !,
-	heap_add_neighbors(H, Source, Ns).
-	
-heap_add_neighbors(H, Source, [N | Ns]) :-
-	N =.. [arc, Graph, Source, Source, W], !,
-	heap_add_neighbors(H, Source, Ns).
-	
-heap_add_neighbors(H, Source, [N | Ns]) :-
-	N =.. [arc, Graph, U, Source, W],
-	U \= Source, !,
-	heap_insert(H, W, N),
-	heap_add_neighbors(H, Source, Ns).
-	
-add_vertex_key(K, N, Source, Destination) :-
-	N =.. [arc, Graph, Destination, Source, K],
-	assert(vertex_key(Graph, Destination, K)).
+  not(vertex_key(G, Source, 0)), !,
+  vertices(G, Vs),
+  init(h, Vs, Source),
+  mst_prim(G, Source).
+
+mst_prim(G, Source) :-
+  vertex_key(G, Source, _), !,
+  heap_extract(h, K, V),
+  assert(vertex_key(G, V, K)),
+  neighbors(G, V, Ns),
+  update_keys(H, Ns, V),
+  mst_prim(G, V).
+
+init(H, [], Source) :-
+  !,
+  Source =.. [vertex, G, V],
+  retract(vertex_key(G, Source, inf)),
+  assert(vertex_key(G, Source, 0)),
+  modify_key(H, 0, inf, Source),
+  heap_extract(H, 0, Source),
+  neighbors(G, V, Ns),
+  update_keys(H, Ns, Source).
+
+init(H, [V | Vs], Source) :-
+  new_heap(H),
+  V =.. [vertex, G, _],
+  heap_insert(H, inf, V),
+  assert(vertex_key(G, V, inf)),
+  init(H, Vs, Source).
+
+
+update_keys(H, [], Source) :- !.
+
+update_keys(H, [N | Ns], Source) :-
+  N = [arc, G, Source, V, W],
+  vertex_key(G, V, K),
+  W < K, !,
+  retract(vertex_key(G, V, K)),
+  assert(vertex_key(G, V, W)),
+  retractall(previous(G, V, _)),
+  assert(previous(G, V, Source)),
+  update_keys(H, Ns, Source).
+
+update_keys(H, [N | Ns], Source) :-
+  N = [arc, G, V, Source, W],
+  vertex_key(G, V, K),
+  W < K, !,
+  retract(vertex_key(G, V, K)),
+  assert(vertex_key(G, V, W)),
+  retractall(previous(G, V, _)),
+  assert(previous(G, V, Source)),
+  update_keys(H, Ns, Source).
+
+update_keys(H, [N | Ns], Source) :-
+  N = [arc, G, Source, V, W],
+  vertex_key(G, V, K),
+  W >= K, !,
+  update_keys(H, Ns, Source).
+
+update_keys(H, [N | Ns], Source) :-
+  N = [arc, G, V, Source, W],
+  vertex_key(G, V, K),
+  W >= K, !,
+  update_keys(H, Ns, Source).
