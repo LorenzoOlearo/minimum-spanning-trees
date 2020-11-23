@@ -90,12 +90,23 @@ arcs(G, Es) :-
 
 
 
-% neighbors/3 true when V is a vertex in G and Ns is a list of all the arcs
-% from V
+% neighbors/3 true when V is a vertex in G and Ns is a list of all the adjacent
+% arcs (in a non oriented graph interpretation)
 
 neighbors(G, V, Ns) :-
     vertex(G, V),
-    findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
+    findall(arc(G, V, N, W), arc(G, V, N, W), From),
+    findall(arc(G, N, V, W), arc(G, N, V, W), To),
+    append(From, To, Ns).
+
+
+
+% neighbors_oriented/3 true when V is a vertex in G and Ns is a list of all the
+% adjacent arcs (in a oriented graph interpretation)
+
+  neighbors(G, V, Ns) :-
+      vertex(G, V),
+      findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 
 
 
@@ -110,7 +121,7 @@ adjs(G, V, Vs) :-
 
 
 
-% adjs_oriented/3 true when V is a vertex in G and Vs is a list of all the 
+% adjs_oriented/3 true when V is a vertex in G and Vs is a list of all the
 % adjacent vertices (in a oriented graph interpretation)
 
 adjs_oriented(G, V, Vs) :-
@@ -331,8 +342,6 @@ heapify(H, P) :-
 	Left > S,
 	Right > S, !.
 
-
-
 heapify(H, P) :-
 	heap_size(H, S),
 	heap_entry(H, P, K, _),
@@ -346,8 +355,6 @@ heapify(H, P) :-
 
 	heapify_on_different(H, Min, P).
 
-
-
 heapify(H, P) :-
 	heap_size(H, S),
 	heap_entry(H, P, K, _),
@@ -360,8 +367,6 @@ heapify(H, P) :-
 	min_key([K, P], [KRight, Right], [_, Min]),
 
 	heapify_on_different(H, Min, P).
-
-
 
 heapify(H, P) :-
 	heap_size(H, S),
