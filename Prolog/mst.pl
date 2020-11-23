@@ -11,7 +11,7 @@ use_module(library(csv)).
 
 % Informs the interpreter that the definition of the predicates may change
 % during execution (using assert/1 and/or retract/1).
-
+:- dynamic graph/1, vertex/2, arc/4.
 
 
 % new_graph/1 Adds a graph to the knowledge base if not already existing.
@@ -35,7 +35,7 @@ delete_graph(G) :-
 % graph is not in the knowledge base
 
 new_vertex(G, V) :-
-    graph(G),
+ ,    graph(G),
     vertex(G, V), !.
 
 new_vertex(G, V) :-
@@ -64,13 +64,15 @@ new_arc(G, U, V, Weight) :-
     graph(G),
     vertex(G, U),
     vertex(G, V),
-    arc(G, U, V, Weight), !.
+    retractall(arc(G, U, V, _)), !,
+    assert(arc(G, U, V, Weight)).
 
 new_arc(G, U, V, Weight) :-
     graph(G),
     vertex(G, U),
     vertex(G, V),
     assert(arc(G, U, V, Weight)), !.
+
 
 
 % new_arc/3 adds a weighted arc with weight 1 (an edge according to graph
@@ -148,6 +150,8 @@ new_graph_from_rows(G, []) :- new_graph(G), !.
 
 new_graph_from_rows(G, [Row | Rows]) :-
     Row =.. [row, V, U, W],
+    atomic(W),
+    not(atom(W)),
     new_graph(G),
     new_vertex(G, V),
     new_vertex(G, U),
@@ -173,7 +177,7 @@ write_graph(G, FileName) :- write_graph(G, FileName, graph).
 
 
 % write_graph_in_rows/2 support predicate for write_graph/2, given a list with
-% the all the arcs of the graph it creates a formatted list where each entry is
+% all the arcs of the graph it creates a formatted list where each entry is
 % the predicate row/3 and its terms are in the order: the source vertex V, the
 % destination vertex U and the weight of the arc between the two
 
