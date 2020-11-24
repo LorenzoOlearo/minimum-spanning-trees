@@ -286,14 +286,19 @@ heap_extract(H, K, V) :-
 % heap_decrease_key/3 support procedure for heap operations, moves a heap_entry
 % from the position P to a new position according to the new key K
 
-heap_decrease_key(H, P, K) :-
-	heap_entry(H, P, OldK, V),
-	OldK >= K,
-	retract(heap_entry(H, P, OldK, V)),
-	assert(heap_entry(H, P, K, V)),
+heap_decrease_key(H, P, NewKey) :-
+	heap_entry(H, P, OldKey, V),
+	heap_decrease_key(H, OldKey, NewKey, V).
+
+
+
+
+heap_decrease_key(H, OldKey, NewKey, V) :-
+  heap_entry(H, P, OldKey, V),
+  OldKey >= NewKey,
+  retract(heap_entry(H, P, OldKey, V)),
+	assert(heap_entry(H, P, NewKey, V)),
 	heap_move_up(H, P).
-
-
 
 % heap_move_up/2 support procedure for heap operations, moves a heap_entry,
 % in a heap H at position P, up until needed according to its key
@@ -427,10 +432,9 @@ heap_switch(H, P1, P2) :-
 % modify_key/4
 
 modify_key(H, NewKey, OldKey, V) :-
-	heap_entry(H, P, OldKey, V),
-	retract(heap_entry(H, P, OldKey, V)),
-	assert(heap_entry(H, P, NewKey, V)),
-	heapify(H, P).
+  heap_decrease_key(H, OldKey, -inf, V),
+  heap_extract(H, -inf, V),
+  heap_insert(H, NewKey, V).
 
 
 
