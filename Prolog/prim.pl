@@ -45,6 +45,7 @@ update_keys(_, [], _) :- !.
 update_keys(H, [N | Ns], Source) :-
   N =.. [arc, G, Source, V, W],
   vertex_key(G, V, K),
+  heap_contains(H, K, V),
   W < K, !,
   retract(vertex_key(G, V, K)),
   assert(vertex_key(G, V, W)),
@@ -60,6 +61,7 @@ update_keys(H, [N | Ns], Source) :-
 update_keys(H, [N | Ns], Source) :-
   N =.. [arc, G, V, Source, W],
   vertex_key(G, V, K),
+  heap_contains(H, K, V),
   W < K, !,
   retract(vertex_key(G, V, K)),
   assert(vertex_key(G, V, W)),
@@ -81,4 +83,16 @@ update_keys(H, [N | Ns], Source) :-
   N =.. [arc, G, V, Source, W],
   vertex_key(G, V, K),
   W >= K, !,
+  update_keys(H, Ns, Source).
+
+update_keys(H, [N | Ns], Source) :-
+  N =.. [arc, G, Source, V, W],
+  vertex_key(G, V, K),
+  not(heap_contains(H, K, V)), !,
+  update_keys(H, Ns, Source).
+
+update_keys(H, [N | Ns], Source) :-
+  N =.. [arc, G, V, Source, W],
+  vertex_key(G, V, K),
+  not(heap_contains(H, K, V)), !,
   update_keys(H, Ns, Source).

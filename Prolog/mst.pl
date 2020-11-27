@@ -96,7 +96,7 @@ arcs(G, Es) :-
 neighbors(G, V, Ns) :-
     vertex(G, V),
     findall(arc(G, V, N, W), arc(G, V, N, W), From),
-    findall(arc(G, N, V, W), arc(G, N, V, W), To),
+    findall(arc(G, X, V, W), arc(G, X, V, W), To),
     append(From, To, Ns).
 
 
@@ -104,9 +104,9 @@ neighbors(G, V, Ns) :-
 % neighbors_oriented/3 true when V is a vertex in G and Ns is a list of all the
 % adjacent arcs (in a oriented graph interpretation)
 
-  neighbors(G, V, Ns) :-
-      vertex(G, V),
-      findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
+neighbors_oriented(G, V, Ns) :-
+  vertex(G, V),
+  findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 
 
 
@@ -116,7 +116,7 @@ neighbors(G, V, Ns) :-
 adjs(G, V, Vs) :-
     vertex(G, V),
     findall(vertex(G, N), arc(G, V, N, W), From),
-    findall(vertex(G, N), arc(G, N, V, W), To),
+    findall(vertex(G, X), arc(G, X, V, W), To),
     append(From, To, Vs).
 
 
@@ -295,10 +295,11 @@ heap_decrease_key(H, P, NewKey) :-
 
 heap_decrease_key(H, OldKey, NewKey, V) :-
   heap_entry(H, P, OldKey, V),
-  OldKey >= NewKey,
+  OldKey > NewKey,
   retract(heap_entry(H, P, OldKey, V)),
 	assert(heap_entry(H, P, NewKey, V)),
 	heap_move_up(H, P).
+
 
 % heap_move_up/2 support procedure for heap operations, moves a heap_entry,
 % in a heap H at position P, up until needed according to its key
@@ -444,3 +445,7 @@ list_heap(H) :-
 	heap(H, _),
 	listing(heap(H, _)),
 	listing(heap_entry(H, _, _, _)).
+
+
+heap_contains(H, K, V) :-
+  heap_entry(H, _, K, V).
