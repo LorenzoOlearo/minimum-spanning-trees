@@ -1,34 +1,41 @@
 %%%% -*- Mode: Prolog -*-
 
-:-dynamic vertex_key/3, vertex_previous/3.
+:- dynamic vertex_key/3, vertex_previous/3.
 
 % For each vertex V in the graph G the predicate mst_prim/2 will add in the
 % knowledge base the predicates vertex_key(G, V, K) and
 % vertex_previous(G, V, K) representing a solution to the MST problem.
 
 mst_prim(G, Source) :-
-    vertices(G, Vs),
+    graph_vertices(G, Vs),
     init(h, G, Vs, Source),
     mst_prim(G).
 
 mst_prim(_) :-
-    heap_size(h, S),
+    heap_has_size(h, S),
     S = 0, !.
 
 mst_prim(G) :-
-    heap_size(h, S),
+    heap_has_size(h, S),
     S > 0, !,
     heap_extract(h, _, V),
-    neighbors(G, V, Ns),
+    vertex_neighbors(G, V, Ns),
     update_keys(h, Ns, V),
     mst_prim(G).
 
 
 
-% the support predicate init/4 initialize the heap H for the Prim's algorithm,
+% mst_get/3
+
+mst_get(G, Source, PreorderTree) :-
+
+
+
+
+% The support predicate init/4 initializes the heap H for the Prim's algorithm,
 % takes a list containing all the vertices [V | Vs] and inserts each one of them
-% as a heapy entry for the heap H, when these are first added their key is set
-% to inf
+% as a heap entry for the heap H, when these entries are first added their key
+% value is set to inf
 
 init(H, G, [], Source) :-
     !,
@@ -38,7 +45,7 @@ init(H, G, [], Source) :-
     heap_decrease_key(H, inf, 0, Source),
 
     heap_extract(H, 0, Source),
-    neighbors(G, Source, Ns),
+    vertex_neighbors(G, Source, Ns),
 
     update_keys(H, Ns, Source).
 
@@ -48,7 +55,6 @@ init(H, G, [V | Vs], Source) :-
     heap_insert(H, inf, Val),
     assert(vertex_key(G, Val, inf)),
     init(H, G, Vs, Source).
-
 
 
 % The support predicate update_keys/3 takes a list of arcs [N | Ns] in the graph
@@ -69,6 +75,7 @@ update_keys(H, [N | Ns], Source) :-
 
     %modify_key(H, W, K, V),
     heap_decrease_key(H, K, W, V),
+
 
     retractall(vertex_previous(G, V, _)),
     assert(vertex_previous(G, V, Source)),
@@ -112,3 +119,12 @@ update_keys(H, [N | Ns], Source) :-
     vertex_key(G, V, K),
     not(heap_contains(H, K, V)), !,
     update_keys(H, Ns, Source).
+
+
+
+% mst_reset/1
+
+mst_reset(G) :-
+    graph(G),
+    delete_heap(h),
+    retractall(vertex_key(G, _, _)).
