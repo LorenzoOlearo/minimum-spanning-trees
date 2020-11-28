@@ -34,13 +34,14 @@ delete_graph(G) :-
 % new_vertex/2 Adds a vertex V to a graph in the knowledge base. false if the
 % graph is not in the knowledge base
 
-new_vertex(G, V) :-
+% new_vertex(G, V) :-
     graph(G),
     vertex(G, V), !.
 
 new_vertex(G, V) :-
     graph(G),
-    assert(vertex(G, V)), !.
+    not(vertex(G, V)),
+    assert(vertex(G, V)).
 
 
 
@@ -254,6 +255,7 @@ heap_head(H, K, V) :-
 % the predicate is true if K is the minimum element
 
 min_of([K], K) :- !.
+
 min_of([K1 | Keys], K) :-
     K =< K1,
     min_of(Keys, K).
@@ -294,9 +296,9 @@ heap_decrease_key(H, P, NewKey) :-
 
 
 heap_decrease_key(H, OldKey, NewKey, V) :-
-heap_entry(H, P, OldKey, V),
-OldKey > NewKey,
-retract(heap_entry(H, P, OldKey, V)),
+    heap_entry(H, P, OldKey, V),
+    OldKey > NewKey,
+    retract(heap_entry(H, P, OldKey, V)),
     assert(heap_entry(H, P, NewKey, V)),
     heap_move_up(H, P).
 
