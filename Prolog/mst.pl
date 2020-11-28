@@ -25,23 +25,23 @@ new_graph(G) :- assert(graph(G)), !.
 % base
 
 delete_graph(G) :-
-    retractall(arc(G, _, _, _)),
-    retractall(vertex(G, _)),
-    retractall(graph(G)).
+	retractall(arc(G, _, _, _)),
+	retractall(vertex(G, _)),
+	retractall(graph(G)).
 
 
 
 % new_vertex/2 Adds a vertex V to a graph in the knowledge base. false if the
 % graph is not in the knowledge base
 
-% new_vertex(G, V) :-
-    graph(G),
-    vertex(G, V), !.
+new_vertex(G, V) :-
+	graph(G),
+	vertex(G, V), !.
 
 new_vertex(G, V) :-
-    graph(G),
-    not(vertex(G, V)),
-    assert(vertex(G, V)).
+	graph(G),
+	not(vertex(G, V)),
+	assert(vertex(G, V)).
 
 
 
@@ -62,17 +62,17 @@ list_vertices(G) :- listing(vertex(G, _)).
 % in the knowledge base
 
 new_arc(G, U, V, Weight) :-
-    graph(G),
-    vertex(G, U),
-    vertex(G, V),
-    retractall(arc(G, U, V, _)), !,
-    assert(arc(G, U, V, Weight)).
+	graph(G),
+	vertex(G, U),
+	vertex(G, V),
+	retractall(arc(G, U, V, _)), !,
+	assert(arc(G, U, V, Weight)).
 
 new_arc(G, U, V, Weight) :-
-    graph(G),
-    vertex(G, U),
-    vertex(G, V),
-    assert(arc(G, U, V, Weight)), !.
+	graph(G),
+	vertex(G, U),
+	vertex(G, V),
+	assert(arc(G, U, V, Weight)), !.
 
 
 
@@ -86,8 +86,8 @@ new_arc(G, U, V) :- new_arc(G, U, V, 1).
 % arcs/2 true when Es is a list of every arcs in a graph G
 
 graph_arcs(G, Es) :-
-    graph(G),
-    findall(arc(G, V, U, W), arc(G, V, U, W), Es).
+	graph(G),
+	findall(arc(G, V, U, W), arc(G, V, U, W), Es).
 
 
 
@@ -95,10 +95,10 @@ graph_arcs(G, Es) :-
 % arcs (in a non oriented graph interpretation)
 
 vertex_neighbors(G, V, Ns) :-
-    vertex(G, V),
-    findall(arc(G, V, N, W), arc(G, V, N, W), From),
-    findall(arc(G, X, V, W), arc(G, X, V, W), To),
-    append(From, To, Ns).
+	vertex(G, V),
+	findall(arc(G, V, N, W), arc(G, V, N, W), From),
+	findall(arc(G, X, V, W), arc(G, X, V, W), To),
+	append(From, To, Ns).
 
 
 
@@ -115,10 +115,10 @@ findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 % vertices (in a non oriented graph interpretation)
 
 adjs(G, V, Vs) :-
-    vertex(G, V),
-    findall(vertex(G, N), arc(G, V, N, W), From),
-    findall(vertex(G, X), arc(G, X, V, W), To),
-    append(From, To, Vs).
+	vertex(G, V),
+	findall(vertex(G, N), arc(G, V, N, W), From),
+	findall(vertex(G, X), arc(G, X, V, W), To),
+	append(From, To, Vs).
 
 
 
@@ -126,8 +126,8 @@ adjs(G, V, Vs) :-
 % adjacent vertices (in a oriented graph interpretation)
 
 adjs_oriented(G, V, Vs) :-
-    vertex(G, V),
-    findall(vertex(G, N), arc(G, V, N, _), Vs).
+	vertex(G, V),
+	findall(vertex(G, N), arc(G, V, N, _), Vs).
 
 
 
@@ -140,8 +140,8 @@ list_arcs(G) :- listing(arc(G, _, _, _)).
 % list_graph/1 prints the list of all vertices and arcs
 
 list_graph(G) :-
-    list_arcs(G),
-    list_vertices(G).
+	list_arcs(G),
+	list_vertices(G).
 
 
 
@@ -149,8 +149,8 @@ list_graph(G) :-
 % to csv file FileName with tabulation as separator
 
 read_graph(G, FileName) :-
-    csv_read_file(FileName, Rows, [separator(0'\t)]),
-    new_graph_from_rows(G, Rows).
+	csv_read_file(FileName, Rows, [separator(0'\t)]),
+	new_graph_from_rows(G, Rows).
 
 
 
@@ -161,28 +161,28 @@ read_graph(G, FileName) :-
 new_graph_from_rows(G, []) :- new_graph(G), !.
 
 new_graph_from_rows(G, [Row | Rows]) :-
-    Row =.. [row, V, U, W],
-    atomic(W),
-    not(atom(W)),
-    new_graph(G),
-    new_vertex(G, V),
-    new_vertex(G, U),
-    new_arc(G, V, U, W),
-    new_graph_from_rows(G, Rows).
+	Row =.. [row, V, U, W],
+	atomic(W),
+	not(atom(W)),
+	new_graph(G),
+	new_vertex(G, V),
+	new_vertex(G, U),
+	new_arc(G, V, U, W),
+	new_graph_from_rows(G, Rows).
 
 
 % write_graph/3 writes a graph G along with its arcs and vertices to a CSV file
 % represented by FileName
 
 write_graph(G, FileName, graph) :-
-    arcs(G, Arcs),
-    write_arcs_in_rows(Arcs, Rows),
-    csv_write_file(FileName, Rows, [separator(0'\t)]).
+	arcs(G, Arcs),
+	write_arcs_in_rows(Arcs, Rows),
+	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
 write_graph(G, FileName, edges) :-
-    arcs(G, Arcs),
-    write_arcs_in_rows(Arcs, Rows),
-    csv_write_file(FileName, Rows, [separator(0'\t)]).
+	arcs(G, Arcs),
+	write_arcs_in_rows(Arcs, Rows),
+	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
 write_graph(G, FileName) :- write_graph(G, FileName, graph).
 
@@ -196,9 +196,9 @@ write_graph(G, FileName) :- write_graph(G, FileName, graph).
 write_arcs_in_rows([], []) :- !.
 
 write_arcs_in_rows([Arc | Arcs], [Row | Rows]) :-
-    Arc =.. [_, _ | TRow],
-    Row =.. [row | TRow],
-    write_arcs_in_rows(Arcs, Rows).
+	Arc =.. [_, _ | TRow],
+	Row =.. [row | TRow],
+	write_arcs_in_rows(Arcs, Rows).
 
 
 
@@ -218,8 +218,8 @@ new_heap(H) :- assert(heap(H, 0)), !.
 % delete_heap/1 deletes the entire heap from the program's knownledge base
 
 delete_heap(H) :-
-    retractall(heap_entry(H, _, _, _)),
-    retractall(heap(H, _)).
+	retractall(heap_entry(H, _, _, _)),
+	retractall(heap(H, _)).
 
 
 
@@ -232,8 +232,8 @@ heap_has_size(H, S) :- heap(H, S).
 % heap_empty/1 true if the heap H is empty
 
 heap_empty(H) :-
-    heap_has_size(H, S),
-    S = 0.
+	heap_has_size(H, S),
+	S = 0.
 
 
 
@@ -247,7 +247,7 @@ heap_not_empty(H) :- not(heap_empty(H)).
 % associated value
 
 heap_head(H, K, V) :-
-    heap_entry(H, 1, K, V).
+	heap_entry(H, 1, K, V).
 
 
 
@@ -257,8 +257,8 @@ heap_head(H, K, V) :-
 min_of([K], K) :- !.
 
 min_of([K1 | Keys], K) :-
-    K =< K1,
-    min_of(Keys, K).
+	K =< K1,
+	min_of(Keys, K).
 
 
 
@@ -266,22 +266,22 @@ min_of([K1 | Keys], K) :-
 % Changes the knowledge base removing the head from the heap
 
 heap_extract(H, K, V) :-
-    heap_has_size(H, 1), !,
-    retract(heap_entry(H, 1, K, V)),
-    retract(heap(H, 1)),
-    assert(heap(H, 0)).
+	heap_has_size(H, 1), !,
+	retract(heap_entry(H, 1, K, V)),
+	retract(heap(H, 1)),
+	assert(heap(H, 0)).
 
 heap_extract(H, K, V) :-
-    heap_has_size(H, S),
-    S > 1, !,
-    retract(heap_entry(H, 1, K, V)),
-    heap_entry(H, S, KTail, VTail),
-    retract(heap_entry(H, S, KTail, VTail)),
-    assert(heap_entry(H, 1, KTail, VTail)),
-    NewS is S - 1,
-    retract(heap(H, S)),
-    assert(heap(H, NewS)),
-    heapify(H, 1).
+	heap_has_size(H, S),
+	S > 1, !,
+	retract(heap_entry(H, 1, K, V)),
+	heap_entry(H, S, KTail, VTail),
+	retract(heap_entry(H, S, KTail, VTail)),
+	assert(heap_entry(H, 1, KTail, VTail)),
+	NewS is S - 1,
+	retract(heap(H, S)),
+	assert(heap(H, NewS)),
+	heapify(H, 1).
 
 
 
@@ -289,18 +289,18 @@ heap_extract(H, K, V) :-
 % from the position P to a new position according to the new key K
 
 heap_decrease_key(H, P, NewKey) :-
-    heap_entry(H, P, OldKey, V),
-    heap_decrease_key(H, OldKey, NewKey, V).
+	heap_entry(H, P, OldKey, V),
+	heap_decrease_key(H, OldKey, NewKey, V).
 
 
 
 
 heap_decrease_key(H, OldKey, NewKey, V) :-
-    heap_entry(H, P, OldKey, V),
-    OldKey > NewKey,
-    retract(heap_entry(H, P, OldKey, V)),
-    assert(heap_entry(H, P, NewKey, V)),
-    heap_move_up(H, P).
+	heap_entry(H, P, OldKey, V),
+	OldKey > NewKey,
+	retract(heap_entry(H, P, OldKey, V)),
+	assert(heap_entry(H, P, NewKey, V)),
+	heap_move_up(H, P).
 
 
 % heap_move_up/2 support procedure for heap operations, moves a heap_entry,
@@ -309,20 +309,20 @@ heap_decrease_key(H, OldKey, NewKey, V) :-
 heap_move_up(_, 1) :- !.
 
 heap_move_up(H, P) :-
-    heap_entry(H, P, K, _),
-    P > 1,
-    PPar is floor(P / 2),
-    heap_entry(H, PPar, KPar, _),
-    KPar =< K, !.
+	heap_entry(H, P, K, _),
+	P > 1,
+	PPar is floor(P / 2),
+	heap_entry(H, PPar, KPar, _),
+	KPar =< K, !.
 
 heap_move_up(H, P) :-
-    heap_entry(H, P, K, _),
-    P > 1,
-    PPar is floor(P / 2),
-    heap_entry(H, PPar, KPar, _),
-    KPar > K, !,
-    heap_switch(H, P, PPar),
-    heap_move_up(H, PPar).
+	heap_entry(H, P, K, _),
+	P > 1,
+	PPar is floor(P / 2),
+	heap_entry(H, PPar, KPar, _),
+	KPar > K, !,
+	heap_switch(H, P, PPar),
+	heap_move_up(H, PPar).
 
 
 
@@ -330,12 +330,12 @@ heap_move_up(H, P) :-
 % heap-propriety
 
 heap_insert(H, K, V) :-
-    heap_has_size(H, S),
-    NewS is S + 1,
-    retract(heap(H, S)),
-    assert(heap(H, NewS)),
-    assert(heap_entry(H, NewS, K, V)),
-    heap_move_up(H, NewS).
+	heap_has_size(H, S),
+	NewS is S + 1,
+	retract(heap(H, S)),
+	assert(heap(H, NewS)),
+	assert(heap_entry(H, NewS, K, V)),
+	heap_move_up(H, NewS).
 
 
 
@@ -343,53 +343,53 @@ heap_insert(H, K, V) :-
 % already heaps
 
 heapify(H, P) :-
-    heap_has_size(H, S),
-    heap_entry(H, P, _, _),
-    Left is P * 2,
-    Right is (P * 2) + 1,
-    Left > S,
-    Right > S, !.
+	heap_has_size(H, S),
+	heap_entry(H, P, _, _),
+	Left is P * 2,
+	Right is (P * 2) + 1,
+	Left > S,
+	Right > S, !.
 
 heapify(H, P) :-
-    heap_has_size(H, S),
-    heap_entry(H, P, K, _),
-    Left is P * 2,
-    Right is (P * 2) + 1,
-    Left =< S,
-    Right > S, !,
-    heap_entry(H, Left, KLeft, _),
+	heap_has_size(H, S),
+	heap_entry(H, P, K, _),
+	Left is P * 2,
+	Right is (P * 2) + 1,
+	Left =< S,
+	Right > S, !,
+	heap_entry(H, Left, KLeft, _),
 
-    min_key([K, P], [KLeft, Left], [_, Min]),
+	min_key([K, P], [KLeft, Left], [_, Min]),
 
-    heapify_on_different(H, Min, P).
-
-heapify(H, P) :-
-    heap_has_size(H, S),
-    heap_entry(H, P, K, _),
-    Left is P * 2,
-    Right is (P * 2) + 1,
-    Left > S,
-    Right =< S, !,
-    heap_entry(H, Right, KRight, _),
-
-    min_key([K, P], [KRight, Right], [_, Min]),
-
-    heapify_on_different(H, Min, P).
+	heapify_on_different(H, Min, P).
 
 heapify(H, P) :-
-    heap_has_size(H, S),
-    heap_entry(H, P, K, _),
-    Left is P * 2,
-    Right is (P * 2) + 1,
-    Left =< S,
-    Right =< S, !,
-    heap_entry(H, Left, KLeft, _),
-    heap_entry(H, Right, KRight, _),
+	heap_has_size(H, S),
+	heap_entry(H, P, K, _),
+	Left is P * 2,
+	Right is (P * 2) + 1,
+	Left > S,
+	Right =< S, !,
+	heap_entry(H, Right, KRight, _),
 
-    min_key([KRight, Right], [KLeft, Left], [KMinRL, MinRL]),
-    min_key([K, P], [KMinRL, MinRL], [_, Min]),
+	min_key([K, P], [KRight, Right], [_, Min]),
 
-    heapify_on_different(H, Min, P).
+	heapify_on_different(H, Min, P).
+
+heapify(H, P) :-
+	heap_has_size(H, S),
+	heap_entry(H, P, K, _),
+	Left is P * 2,
+	Right is (P * 2) + 1,
+	Left =< S,
+	Right =< S, !,
+	heap_entry(H, Left, KLeft, _),
+	heap_entry(H, Right, KRight, _),
+
+	min_key([KRight, Right], [KLeft, Left], [KMinRL, MinRL]),
+	min_key([K, P], [KMinRL, MinRL], [_, Min]),
+
+	heapify_on_different(H, Min, P).
 
 
 
@@ -399,10 +399,10 @@ heapify(H, P) :-
 heapify_on_different(H, Min, Min) :- ! , heap(H, _).
 
 heapify_on_different(H, Min, P) :-
-    Min \= P, !,
-    heap(H, _),
-    heap_switch(H, Min, P),
-    heapify(H, Min).
+	Min \= P, !,
+	heap(H, _),
+	heap_switch(H, Min, P),
+	heapify(H, Min).
 
 
 
@@ -421,14 +421,14 @@ min_key([K1, _], [K2, P2], [K2, P2]) :- K1 > K2, !.
 heap_switch(H, P, P) :- !, heap(H, _).
 
 heap_switch(H, P1, P2) :-
-    P1 \= P2, !,
-    heap(H, _),
-    heap_entry(H, P1, K1, V1),
-    heap_entry(H, P2, K2, V2),
-    retract(heap_entry(H, P1, K1, V1)),
-    retract(heap_entry(H, P2, K2, V2)),
-    assert(heap_entry(H, P2, K1, V1)),
-    assert(heap_entry(H, P1, K2, V2)).
+	P1 \= P2, !,
+	heap(H, _),
+	heap_entry(H, P1, K1, V1),
+	heap_entry(H, P2, K2, V2),
+	retract(heap_entry(H, P1, K1, V1)),
+	retract(heap_entry(H, P2, K2, V2)),
+	assert(heap_entry(H, P2, K1, V1)),
+	assert(heap_entry(H, P1, K2, V2)).
 
 
 
@@ -436,21 +436,22 @@ heap_switch(H, P1, P2) :-
 % in a heap H with the key NewKey without altering the min-heap property
 
 modify_key(H, NewKey, OldKey, V) :-
-    heap_decrease_key(H, OldKey, -inf, V),
-    heap_extract(H, -inf, V),
-    heap_insert(H, NewKey, V).
+	heap_decrease_key(H, OldKey, -inf, V),
+	heap_extract(H, -inf, V),
+	heap_insert(H, NewKey, V).
+	this is a tab
 
 
 
 % list_heap/1 lists the current internal heap representation on the console
 
 list_heap(H) :-
-    heap(H, _),
-    listing(heap(H, _)),
-    listing(heap_entry(H, _, _, _)).
+	heap(H, _),
+	listing(heap(H, _)),
+	listing(heap_entry(H, _, _, _)).
 
 % heap_contains/3 is true when the heap H contains the entry with key K and
 % value V
 
 heap_contains(H, K, V) :-
-    heap_entry(H, _, K, V).
+	heap_entry(H, _, K, V).
