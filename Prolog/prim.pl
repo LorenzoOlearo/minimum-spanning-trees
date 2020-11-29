@@ -26,12 +26,13 @@ mst_prim(G) :-
 
 
 % mst_get/3
+%
+% TODO:	Sorting
 
 mst_get(G, Source, PreorderTree) :-
-	mst_prim(G, Source),
 	new_graph(PreorderTree),
-	findall(vertex_key(G, _, _), vertex_key(G, _, _), VKs),
-	findall(vertex_previous(G, _, _), vertex_previous(G, _, _),  VPs),
+	findall([V, K], vertex_key(G, V, K), VKs),
+	findall([V, U], vertex_previous(G, V, U),  VPs),
 
 	add_arcs_to_mst(PreorderTree, VKs, VPs).
 
@@ -41,10 +42,7 @@ mst_get(G, Source, PreorderTree) :-
 
 add_arcs_to_mst(_, [], []) :- !.
 
-add_arcs_to_mst(PreorderTree, [VK | VKs], [VP | VPs]) :-
-	VK =.. [vertex_key, G, Source, W],
-	VP =.. [vertex_previous, G, Dest, Source],
-
+add_arcs_to_mst(PreorderTree, [[Source, W] | VKs], [[Dest, Source] | VPs]) :-
 	new_vertex(PreorderTree, Source),
 	new_vertex(PreorderTree, Dest),
 	new_arc(PreorderTree, Dest, Source, W),
@@ -96,7 +94,6 @@ update_keys(H, [N | Ns], Source) :-
 
 	%modify_key(H, W, K, V),
 	heap_decrease_key(H, K, W, V),
-
 
 	retractall(vertex_previous(G, V, _)),
 	assert(vertex_previous(G, V, Source)),

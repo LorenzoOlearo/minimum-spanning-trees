@@ -140,6 +140,7 @@ list_arcs(G) :- listing(arc(G, _, _, _)).
 % list_graph/1 prints the list of all vertices and arcs
 
 list_graph(G) :-
+	graph(G),
 	list_arcs(G),
 	list_vertices(G).
 
@@ -439,7 +440,6 @@ modify_key(H, NewKey, OldKey, V) :-
 	heap_decrease_key(H, OldKey, -inf, V),
 	heap_extract(H, -inf, V),
 	heap_insert(H, NewKey, V).
-	this is a tab
 
 
 
