@@ -26,6 +26,35 @@ mst_prim(G) :-
 
 
 % mst_get/3
+
+mst_get(G, Source, PreorderTree) :-
+	findall(V, vertex_previous(G, V, Source), Vs),
+	sort(Vs, Sorted_Vs),
+	mst_get_recurse(G, Source, PreorderTree, Sorted_Vs).
+
+
+
+% mst_get_recurse/4 support predicate for mst_get, calls mst_get for all the
+% adjacent nodes of Source given in as fouth argument
+
+mst_get_recurse(_, _, [], []) :- !.
+
+mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
+	arc(G, Source, V, W), !,
+	mst_get(G, V, PreorderTree),
+	mst_get_recurse(G, Source, Others, Vs),
+	append(PreorderTree, Others, Rest).
+
+mst_get_recurse(G, Source, [arc(G, V, Source, W) | Rest], [V | Vs]) :-
+	arc(G, V, Source, W), !,
+	mst_get(G, V, PreorderTree),
+	mst_get_recurse(G, Source, Others, Vs),
+	append(PreorderTree, Others, Rest).
+
+
+
+/*
+% mst_get/3
 %
 % TODO:	Sorting
 
@@ -49,7 +78,7 @@ add_arcs_to_mst(PreorderTree, [[Source, W] | VKs], [[Dest, Source] | VPs]) :-
 
 	add_arcs_to_mst(PreorderTree, VKs, VPs).
 
-
+*/
 
 % The support predicate init/4 initializes the heap H for the Prim's algorithm,
 % takes a list containing all the vertices [V | Vs] and inserts each one of them
