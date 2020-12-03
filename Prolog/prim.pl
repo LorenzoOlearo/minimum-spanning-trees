@@ -7,20 +7,21 @@
 % vertex_previous(G, V, K) representing a solution to the MST problem.
 
 mst_prim(G, Source) :-
+	mst_reset(G),
 	graph_vertices(G, Vs),
-	init(h, G, Vs, Source),
+	init(G, G, Vs, Source),
 	mst_prim(G).
 
-mst_prim(_) :-
-	heap_has_size(h, S),
+mst_prim(G) :-
+	heap_has_size(G, S),
 	S = 0, !.
 
 mst_prim(G) :-
-	heap_has_size(h, S),
+	heap_has_size(G, S),
 	S > 0, !,
-	heap_extract(h, _, V),
+	heap_extract(G, _, V),
 	vertex_neighbors(G, V, Ns),
-	update_keys(h, Ns, V),
+	update_keys(G, Ns, V),
 	mst_prim(G).
 
 
@@ -52,33 +53,6 @@ mst_get_recurse(G, Source, [arc(G, V, Source, W) | Rest], [V | Vs]) :-
 	append(PreorderTree, Others, Rest).
 
 
-
-/*
-% mst_get/3
-%
-% TODO:	Sorting
-
-mst_get(G, Source, PreorderTree) :-
-	new_graph(PreorderTree),
-	findall([V, K], vertex_key(G, V, K), VKs),
-	findall([V, U], vertex_previous(G, V, U),  VPs),
-
-	add_arcs_to_mst(PreorderTree, VKs, VPs).
-
-
-
-% add_arcs_to_mst/3 support predicate for mst_get/3
-
-add_arcs_to_mst(_, [], []) :- !.
-
-add_arcs_to_mst(PreorderTree, [[Source, W] | VKs], [[Dest, Source] | VPs]) :-
-	new_vertex(PreorderTree, Source),
-	new_vertex(PreorderTree, Dest),
-	new_arc(PreorderTree, Dest, Source, W),
-
-	add_arcs_to_mst(PreorderTree, VKs, VPs).
-
-*/
 
 % The support predicate init/4 initializes the heap H for the Prim's algorithm,
 % takes a list containing all the vertices [V | Vs] and inserts each one of them
@@ -173,6 +147,6 @@ update_keys(H, [N | Ns], Source) :-
 
 mst_reset(G) :-
 	graph(G),
-	delete_heap(h),
+	delete_heap(G),
 	retractall(vertex_key(G, _, _)),
 	retractall(vertex_previous(G, _, _)).
