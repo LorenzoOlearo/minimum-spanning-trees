@@ -91,22 +91,19 @@ graph_arcs(G, Es) :-
 
 
 
-% vertex_neighbors/3 true when V is a vertex in G and Ns is a list of all the adjacent
-% arcs (in a non oriented graph interpretation)
+% vertex_neighbors/3 true when V is a vertex in G and Ns is a list of all the
+% adjacent arcs (in a non oriented graph interpretation)
 
-vertex_neighbors(G, V, Ns) :-
-	vertex(G, V),
-	findall(arc(G, V, N, W), arc(G, V, N, W), From),
-	findall(arc(G, X, V, W), arc(G, X, V, W), To),
-	append(From, To, Ns).
+vertex_neighbors(G, V, Ns) :- vertex(G, V), findall(arc(G, V, N, W), arc(G, V,
+	N, W), From), findall(arc(G, X, V, W), arc(G, X, V, W), To), append(From,
+	To, Ns).
 
 
 
-% vertex_neighbors_oriented/3 true when V is a vertex in G and Ns is a list of all the
-% adjacent arcs (in a oriented graph interpretation)
+% vertex_neighbors_oriented/3 true when V is a vertex in G and Ns is a list of
+% all the adjacent arcs (in a oriented graph interpretation)
 
-vertex_neighbors_oriented(G, V, Ns) :-
-vertex(G, V),
+vertex_neighbors_oriented(G, V, Ns) :- vertex(G, V),
 findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 
 
@@ -176,12 +173,12 @@ new_graph_from_rows(G, [Row | Rows]) :-
 % represented by FileName
 
 write_graph(G, FileName, graph) :-
-	arcs(G, Arcs),
+	graph_arcs(G, Arcs),
 	write_arcs_in_rows(Arcs, Rows),
 	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
 write_graph(G, FileName, edges) :-
-	arcs(G, Arcs),
+	graph_arcs(G, Arcs),
 	write_arcs_in_rows(Arcs, Rows),
 	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
