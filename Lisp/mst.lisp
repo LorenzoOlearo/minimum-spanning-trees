@@ -49,6 +49,16 @@
 
 
 
+(defun delete-graph (graph-id)
+  (maphash #'(lambda (k v)
+               (cond ((equal (second v) graph-id) (remhash k *vertices*))))
+           *vertices*)
+  (maphash #'(lambda (k v)
+               (cond ((equal (second v) graph-id) (remhash k *arcs*))))
+           *arcs*))
+
+
+
 (defun new-vertex (graph-id vertex-id)
   (setf (gethash (list 'vertex graph-id vertex-id)
                  *vertices*)
@@ -58,12 +68,23 @@
 
 ;; Returns a list containing all the vertices in a given graph rapresented by
 ;; its graph-id
-;; TODO
 
-(defun graph-vertices (graph-id)
-  (maphash #'((lambda (graph-id vertex-id)
-                (list 'vertex graph-id vertex-id)))
-           *vertices*))
+(defun temp-graph-vertices (graph-id)
+  (setf 'acc ())
+  (maphash #'(lambda (k v)
+               (cond (equal (second v) graph-id)
+                     (setf 'acc (append (gethash 'acc) v))))
+           *vertices*)
+  (gethash 'acc))
+
+
+(defun graph-vertexes (graph-id)
+  (let ((acc '()))
+    (maphash #'(lambda (k v)
+                 (cond ((equal (second v) graph-id)
+                        (setq acc (append acc v)))))
+             *vertices*)
+    (acc)))
 
 
 
