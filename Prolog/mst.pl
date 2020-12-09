@@ -65,14 +65,8 @@ new_arc(G, U, V, Weight) :-
 	graph(G),
 	vertex(G, U),
 	vertex(G, V),
-	retractall(arc(G, U, V, _)), !,
+	retractall(arc(G, U, V, _)),
 	assert(arc(G, U, V, Weight)).
-
-new_arc(G, U, V, Weight) :-
-	graph(G),
-	vertex(G, U),
-	vertex(G, V),
-	assert(arc(G, U, V, Weight)), !.
 
 
 
@@ -94,17 +88,20 @@ graph_arcs(G, Es) :-
 % vertex_neighbors/3 true when V is a vertex in G and Ns is a list of all the
 % adjacent arcs (in a non oriented graph interpretation)
 
-vertex_neighbors(G, V, Ns) :- vertex(G, V), findall(arc(G, V, N, W), arc(G, V,
-	N, W), From), findall(arc(G, X, V, W), arc(G, X, V, W), To), append(From,
-	To, Ns).
+vertex_neighbors(G, V, Ns) :-
+	vertex(G, V),
+	findall(arc(G, V, N, W), arc(G, V, N, W), From),
+	findall(arc(G, X, V, W), arc(G, X, V, W), To),
+	append(From, To, Ns).
 
 
 
 % vertex_neighbors_oriented/3 true when V is a vertex in G and Ns is a list of
 % all the adjacent arcs (in a oriented graph interpretation)
 
-vertex_neighbors_oriented(G, V, Ns) :- vertex(G, V),
-findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
+vertex_neighbors_oriented(G, V, Ns) :-
+	vertex(G, V),
+	findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 
 
 
@@ -290,15 +287,13 @@ heap_decrease_key(H, P, NewKey) :-
 	heap_entry(H, P, OldKey, V),
 	heap_decrease_key(H, OldKey, NewKey, V).
 
-
-
-
 heap_decrease_key(H, OldKey, NewKey, V) :-
 	heap_entry(H, P, OldKey, V),
 	OldKey > NewKey,
 	retract(heap_entry(H, P, OldKey, V)),
 	assert(heap_entry(H, P, NewKey, V)),
 	heap_move_up(H, P).
+
 
 
 % heap_move_up/2 support procedure for heap operations, moves a heap_entry,
