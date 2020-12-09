@@ -1,31 +1,4 @@
-;; DEBUG ONLY REMOVE BEFORE RELEASE
-(new-graph 'greg)
 
-(new-vertex 'greg 'a)
-(new-vertex 'greg 'b)
-(new-vertex 'greg 'c)
-(new-vertex 'greg 'd)
-(new-vertex 'greg 'e)
-(new-vertex 'greg 'f)
-(new-vertex 'greg 'g)
-(new-vertex 'greg 'h)
-(new-vertex 'greg 'i)
-
-(new-arc 'greg 'b 'a 4)
-(new-arc 'greg 'h 'a 8)
-(new-arc 'greg 'b 'h 11)
-(new-arc 'greg 'i 'h 7)
-(new-arc 'greg 'g 'h 1)
-(new-arc 'greg 'c 'b 8)
-(new-arc 'greg 'c 'i 2)
-(new-arc 'greg 'g 'i 6)
-(new-arc 'greg 'f 'g 2)
-(new-arc 'greg 'f 'c 4)
-(new-arc 'greg 'e 'f 10)
-(new-arc 'greg 'd 'f 14)
-(new-arc 'greg 'd 'c 7)
-(new-arc 'greg 'e 'd )
-;; DEBUG ONLY REMOVE BEFORE RELEASE
 
 
 
@@ -78,13 +51,13 @@
   (gethash 'acc))
 
 
-(defun graph-vertexes (graph-id)
+(defun graph-vertices (graph-id)
   (let ((acc '()))
-    (maphash #'(lambda (k v)
-                 (cond ((equal (second v) graph-id)
-                        (setq acc (append acc v)))))
-             *vertices*)
-    (acc)))
+  (maphash #'(lambda (k v)
+               (cond ((equal (second v) graph-id)
+                      (setq acc (append acc v)))))
+           *vertices*)
+  acc))
 
 
 
@@ -106,3 +79,36 @@
   (setf (gethash (list 'arc graph-id vertex-id-dest vertex-id-source weight)
                  *arcs*)
         (list 'arc graph-id vertex-id-dest vertex-id-source weight)))
+
+
+
+
+
+;; DEBUG ONLY REMOVE BEFORE RELEASE
+(new-graph 'greg)
+
+(new-vertex 'greg 'a)
+(new-vertex 'greg 'b)
+(new-vertex 'greg 'c)
+(new-vertex 'greg 'd)
+(new-vertex 'greg 'e)
+(new-vertex 'greg 'f)
+(new-vertex 'greg 'g)
+(new-vertex 'greg 'h)
+(new-vertex 'greg 'i)
+
+(new-arc 'greg 'b 'a 4)
+(new-arc 'greg 'h 'a 8)
+(new-arc 'greg 'b 'h 11)
+(new-arc 'greg 'i 'h 7)
+(new-arc 'greg 'g 'h 1)
+(new-arc 'greg 'c 'b 8)
+(new-arc 'greg 'c 'i 2)
+(new-arc 'greg 'g 'i 6)
+(new-arc 'greg 'f 'g 2)
+(new-arc 'greg 'f 'c 4)
+(new-arc 'greg 'e 'f 10)
+(new-arc 'greg 'd 'f 14)
+(new-arc 'greg 'd 'c 7)
+(new-arc 'greg 'e 'd )
+;; DEBUG ONLY REMOVE BEFORE RELEASE
