@@ -175,8 +175,7 @@ write_graph(G, FileName, graph) :-
 	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
 write_graph(G, FileName, edges) :-
-	graph_arcs(G, Arcs),
-	write_arcs_in_rows(Arcs, Rows),
+	write_arcs_in_rows(G, Rows),
 	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
 write_graph(G, FileName) :- write_graph(G, FileName, graph).
@@ -191,7 +190,7 @@ write_graph(G, FileName) :- write_graph(G, FileName, graph).
 write_arcs_in_rows([], []) :- !.
 
 write_arcs_in_rows([Arc | Arcs], [Row | Rows]) :-
-	Arc =.. [_, _ | TRow],
+	Arc =.. [arc, _ | TRow],
 	Row =.. [row | TRow],
 	write_arcs_in_rows(Arcs, Rows).
 
