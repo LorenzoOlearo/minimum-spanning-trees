@@ -55,7 +55,7 @@
   (let ((acc '()))
   (maphash #'(lambda (k v)
                (cond ((equal (second v) graph-id)
-                      (setq acc (append acc v)))))
+                      (setq acc (append acc (list v))))))
            *vertices*)
   acc))
 
