@@ -484,9 +484,30 @@ mst_prim(G) :-
 % mst_get/3
 
 mst_get(G, Source, PreorderTree) :-
-	findall(V, vertex_previous(G, V, Source), Vs),
-	sort(Vs, Sorted_Vs),
-	mst_get_recurse(G, Source, PreorderTree, Sorted_Vs).
+	mst_get_neighbors(G, Source, Vs),
+	mst_get_recurse(G, Source, PreorderTree, Vs).
+
+
+
+% mst_get_neighbors/3 support predicate for mst_get/3 could be incorporated in
+% mst_get/3
+
+mst_get_neighbors(G, Source, Neighbors) :-
+	findall([V, W], (vertex_previous(G, V, Source), arc(G, V, Source, W)), From),
+	findall([V, W], (vertex_previous(G, V, Source), arc(G, Source, V, W)), To),
+	append(From, To, Arcs),
+	sort(1, @=<, Arcs, VSort),
+	sort(2, @=<, VSort, WSort),
+	mst_get_extract_vertices(WSort, Neighbors).
+
+
+
+% mst_get_extract_vertices/2 support predicate for mst_get_neighbors/3
+
+mst_get_extract_vertices([], []) :- !.
+
+mst_get_extract_vertices([[V, _] | Rest], [V | Vs]) :-
+	mst_get_extract_vertices(Rest, Vs).
 
 
 
