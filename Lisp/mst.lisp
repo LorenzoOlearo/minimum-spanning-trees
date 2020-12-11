@@ -11,74 +11,65 @@
 
 
 
-(defun is-graph (graph-id)
-  (gethash graph-id *graphs*))
+(defun is-graph (g)
+  (gethash g *graphs*))
 
 
 
-(defun new-graph (graph-id)
-  (or (gethash graph-id *graphs*)
-      (setf (gethash graph-id *graphs*) graph-id)))
+(defun new-graph (g)
+  (or (gethash g *graphs*)
+      (setf (gethash g *graphs*) g)))
 
 
 
-(defun delete-graph (graph-id)
+(defun delete-graph (g)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) graph-id) (remhash k *vertices*))))
+               (cond ((equal (second v) g) (remhash k *vertices*))))
            *vertices*)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) graph-id) (remhash k *arcs*))))
+               (cond ((equal (second v) g) (remhash k *arcs*))))
            *arcs*))
 
 
 
-(defun new-vertex (graph-id vertex-id)
-  (setf (gethash (list 'vertex graph-id vertex-id)
+(defun new-vertex (g v)
+  (setf (gethash (list 'vertex g v)
                  *vertices*)
-        (list 'vertex graph-id vertex-id)))
+        (list 'vertex g v)))
 
 
 
-;; Returns a list containing all the vertices in a given graph rapresented by
-;; its graph-id
+;; Returns a list containing all the vertices in a given graph rapresented by g
 
-(defun temp-graph-vertices (graph-id)
-  (setf 'acc ())
-  (maphash #'(lambda (k v)
-               (cond (equal (second v) graph-id)
-                     (setf 'acc (append (gethash 'acc) v))))
-           *vertices*)
-  (gethash 'acc))
-
-
-(defun graph-vertices (graph-id)
+(defun graph-vertices (g)
   (let ((acc '()))
-  (maphash #'(lambda (k v)
-               (cond ((equal (second v) graph-id)
-                      (setq acc (append acc (list v))))))
+  (maphash #'(lambda (key val)
+               (cond ((equal (second val) g)
+                      (setq acc (append acc (list val))))))
            *vertices*)
   acc))
 
 
 
-;; TEMP DEMO
-;; What graph-vertices should do.
-
-(defun hash-keys (hash-table)
-  (loop for key being the hash-keys of hash-table collect key))
-
-
-
 ;; The function new-arc creates an entry in the hash table rapresenting a new
 ;; arc between two vertices using the following notation:
-;; (arc graph-id vertex-id-destination vertex-id-source weight)
+;; (arc g v-destination v-source weight)
 ;; Note that the parameter rapresenting the arc's weight is optional, its
 ;; default value is set to 1.
 
-(defun new-arc (graph-id vertex-id-dest vertex-id-source &optional (weight 1))
-  (setf (gethash (list 'arc graph-id vertex-id-dest vertex-id-source weight)
+(defun new-arc (g u v &optional (w 1))
+  (setf (gethash (list 'arc g v w)
                  *arcs*)
-        (list 'arc graph-id vertex-id-dest vertex-id-source weight)))
+        (list 'arc g v w)))
+
+
+(defun graph-arcs (g)
+  (let ((acc '()))
+    (maphash #'(lambda (key val)
+                 (cond ((equal (second val)) g)
+                       (setq acc (append acc (list val)))))
+             *arcs*)
+    acc))
 
 
 
