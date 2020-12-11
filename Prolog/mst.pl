@@ -493,7 +493,8 @@ mst_get(G, Source, PreorderTree) :-
 % mst_get/3
 
 mst_get_neighbors(G, Source, Neighbors) :-
-	findall([V, W], (vertex_previous(G, V, Source), arc(G, V, Source, W)), From),
+	findall([V, W], (vertex_previous(G, V, Source),
+					 arc(G, V, Source, W)), From),
 	findall([V, W], (vertex_previous(G, V, Source), arc(G, Source, V, W)), To),
 	append(From, To, Arcs),
 	sort(1, @=<, Arcs, VSort),
