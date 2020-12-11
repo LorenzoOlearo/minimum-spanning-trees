@@ -1,7 +1,3 @@
-
-
-
-
 (defparameter *vertices* (make-hash-table :test #'equal))
 (defparameter *arcs* (make-hash-table :test #'equal))
 (defparameter *graphs* (make-hash-table :test #'equal))
@@ -31,6 +27,7 @@
            *arcs*))
 
 
+;; Creates a new vertex in the graph g
 
 (defun new-vertex (g v)
   (setf (gethash (list 'vertex g v)
@@ -43,11 +40,12 @@
 
 (defun graph-vertices (g)
   (let ((acc '()))
-  (maphash #'(lambda (key val)
-               (cond ((equal (second val) g)
-                      (setq acc (append acc (list val))))))
-           *vertices*)
-  acc))
+    (maphash #'(lambda (key val)
+                 (declare (ignore key))
+                 (cond ((equal (second val) g)
+                        (setq acc (append acc (list val))))))
+             *vertices*)
+    acc))
 
 
 
@@ -64,13 +62,17 @@
         (list 'arc g u v w)))
 
 
+
+;; Returns a list containing all the arcs between two vertices in a given graph
+
 (defun graph-arcs (g)
   (let ((acc '()))
     (maphash #'(lambda (key val)
+                 (declare (ignore key))
                  (cond ((equal (second val) g)
                         (setq acc (append acc (list val))))))
              *arcs*)
-     acc))
+    acc))
 
 
 
