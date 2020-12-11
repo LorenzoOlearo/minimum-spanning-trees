@@ -58,18 +58,19 @@
 ;; default value is set to 1.
 
 (defun new-arc (g u v &optional (w 1))
-  (setf (gethash (list 'arc g v w)
-                 *arcs*)
-        (list 'arc g v w)))
+  (cond ((gethash (list 'arc g v u) *arcs*)
+         (remhash (list 'arc g v u) *arcs*)))
+  (setf (gethash (list 'arc g u v) *arcs*)
+        (list 'arc g u v w)))
 
 
 (defun graph-arcs (g)
   (let ((acc '()))
     (maphash #'(lambda (key val)
-                 (cond ((equal (second val)) g)
-                       (setq acc (append acc (list val)))))
+                 (cond ((equal (second val) g)
+                        (setq acc (append acc (list val))))))
              *arcs*)
-    acc))
+     acc))
 
 
 
