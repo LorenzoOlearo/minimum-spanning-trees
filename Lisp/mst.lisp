@@ -43,7 +43,7 @@
     (maphash #'(lambda (key val)
                  (declare (ignore key))
                  (cond ((equal (second val) g)
-                        (setq acc (append acc (list val))))))
+                        (push val acc))))
              *vertices*)
     acc))
 
@@ -68,7 +68,7 @@
     (maphash #'(lambda (key val)
                  (declare (ignore key))
                  (cond ((equal (second val) g)
-                        (setq acc (append acc (list val))))))
+                        (push val acc))))
              *arcs*)
     acc))
 
@@ -92,7 +92,7 @@
 
 
 ;; PLACEHOLDER while waiting for updated specifics.
-;; What at least one of the two neighbors function should be.
+;; How at least one of the two neighbors function should look like.
 (defun fixed-graph-vertices (g v)
   (remove nil
           (mapcar #'(lambda (arc)
