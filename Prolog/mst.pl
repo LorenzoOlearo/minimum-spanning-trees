@@ -523,7 +523,7 @@ mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
 	mst_get_recurse(G, Source, Others, Vs),
 	append(PreorderTree, Others, Rest).
 
-mst_get_recurse(G, Source, [arc(G, V, Source, W) | Rest], [V | Vs]) :-
+mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
 	arc(G, V, Source, W), !,
 	mst_get(G, V, PreorderTree),
 	mst_get_recurse(G, Source, Others, Vs),
