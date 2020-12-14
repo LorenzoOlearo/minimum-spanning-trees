@@ -82,10 +82,26 @@
 (defun graph-vertex-neighbors (g v)
   (remove nil
              (mapcar #'(lambda (arc)
-                         (cond ((equal (third arc) v) arc)
-                               ((equal (fourth arc) v) arc)
+                         (cond ((equal (third arc) v)
+                                arc)
+                               ((equal (fourth arc) v)
+                                arc)
                                (T nil)))
                      (graph-arcs g))))
+
+
+
+;; PLACEHOLDER while waiting for updated specifics.
+;; What at least one of the two neighbors function should be.
+(defun fixed-graph-vertices (g v)
+  (remove nil
+          (mapcar #'(lambda (arc)
+                      (cond ((equal (third arc) v)
+                             (list 'vertex g (fourth arc)))
+                            ((equal (fourth arc) v)
+                             (list 'vertex g (third arc)))
+                            (T nil)))
+                  (graph-arcs g))))
 
 
 
@@ -96,8 +112,10 @@
 (defun graph-vertex-adjacent (g v)
   (remove nil
              (mapcar #'(lambda (arc)
-                         (cond ((equal (third arc) v) (remove-last arc))
-                               ((equal (fourth arc) v) (remove-last  arc))
+                         (cond ((equal (third arc) v)
+                                (remove-last arc))
+                               ((equal (fourth arc) v)
+                                (remove-last  arc))
                                (T nil)))
                      (graph-arcs g))))
 
