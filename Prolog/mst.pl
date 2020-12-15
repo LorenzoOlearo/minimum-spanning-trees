@@ -65,14 +65,9 @@ new_arc(G, U, V, Weight) :-
 	graph(G),
 	vertex(G, U),
 	vertex(G, V),
-	retractall(arc(G, U, V, _)), !,
+	retractall(arc(G, U, V, _)),
+	retractall(arc(G, V, U, _)),
 	assert(arc(G, U, V, Weight)).
-
-new_arc(G, U, V, Weight) :-
-	graph(G),
-	vertex(G, U),
-	vertex(G, V),
-	assert(arc(G, U, V, Weight)), !.
 
 
 
@@ -91,8 +86,8 @@ graph_arcs(G, Es) :-
 
 
 
-% vertex_neighbors/3 true when V is a vertex in G and Ns is a list of all the adjacent
-% arcs (in a non oriented graph interpretation)
+% vertex_neighbors/3 true when V is a vertex in G and Ns is a list of all the
+% adjacent arcs (in a non oriented graph interpretation)
 
 vertex_neighbors(G, V, Ns) :-
 	vertex(G, V),
@@ -102,12 +97,12 @@ vertex_neighbors(G, V, Ns) :-
 
 
 
-% vertex_neighbors_oriented/3 true when V is a vertex in G and Ns is a list of all the
-% adjacent arcs (in a oriented graph interpretation)
+% vertex_neighbors_oriented/3 true when V is a vertex in G and Ns is a list of
+% all the adjacent arcs (in a oriented graph interpretation)
 
 vertex_neighbors_oriented(G, V, Ns) :-
-vertex(G, V),
-findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
+	vertex(G, V),
+	findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 
 
 
@@ -175,15 +170,13 @@ new_graph_from_rows(G, [Row | Rows]) :-
 % write_graph/3 writes a graph G along with its arcs and vertices to a CSV file
 % represented by FileName
 
-write_graph(G, FileName, graph) :-
-	arcs(G, Arcs),
-	write_arcs_in_rows(Arcs, Rows),
+write_graph(G, FileName, edges) :-
+	write_arcs_in_rows(G, Rows),
 	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
-write_graph(G, FileName, edges) :-
-	arcs(G, Arcs),
-	write_arcs_in_rows(Arcs, Rows),
-	csv_write_file(FileName, Rows, [separator(0'\t)]).
+write_graph(G, FileName, graph) :-
+	graph_arcs(G, Arcs),
+	write_graph(Arcs, FileName, edges).
 
 write_graph(G, FileName) :- write_graph(G, FileName, graph).
 
@@ -197,7 +190,7 @@ write_graph(G, FileName) :- write_graph(G, FileName, graph).
 write_arcs_in_rows([], []) :- !.
 
 write_arcs_in_rows([Arc | Arcs], [Row | Rows]) :-
-	Arc =.. [_, _ | TRow],
+	Arc =.. [arc, _ | TRow],
 	Row =.. [row | TRow],
 	write_arcs_in_rows(Arcs, Rows).
 
@@ -293,15 +286,13 @@ heap_decrease_key(H, P, NewKey) :-
 	heap_entry(H, P, OldKey, V),
 	heap_decrease_key(H, OldKey, NewKey, V).
 
-
-
-
 heap_decrease_key(H, OldKey, NewKey, V) :-
 	heap_entry(H, P, OldKey, V),
 	OldKey > NewKey,
 	retract(heap_entry(H, P, OldKey, V)),
 	assert(heap_entry(H, P, NewKey, V)),
 	heap_move_up(H, P).
+
 
 
 % heap_move_up/2 support procedure for heap operations, moves a heap_entry,
@@ -493,9 +484,31 @@ mst_prim(G) :-
 % mst_get/3
 
 mst_get(G, Source, PreorderTree) :-
-	findall(V, vertex_previous(G, V, Source), Vs),
-	sort(Vs, Sorted_Vs),
-	mst_get_recurse(G, Source, PreorderTree, Sorted_Vs).
+	mst_get_neighbors(G, Source, Vs),
+	mst_get_recurse(G, Source, PreorderTree, Vs).
+
+
+
+% mst_get_neighbors/3 support predicate for mst_get/3 could be incorporated in
+% mst_get/3
+
+mst_get_neighbors(G, Source, Neighbors) :-
+	findall([V, W], (vertex_previous(G, V, Source),
+					 arc(G, V, Source, W)), From),
+	findall([V, W], (vertex_previous(G, V, Source), arc(G, Source, V, W)), To),
+	append(From, To, Arcs),
+	sort(1, @=<, Arcs, VSort),
+	sort(2, @=<, VSort, WSort),
+	mst_get_extract_vertices(WSort, Neighbors).
+
+
+
+% mst_get_extract_vertices/2 support predicate for mst_get_neighbors/3
+
+mst_get_extract_vertices([], []) :- !.
+
+mst_get_extract_vertices([[V, _] | Rest], [V | Vs]) :-
+	mst_get_extract_vertices(Rest, Vs).
 
 
 
@@ -510,7 +523,7 @@ mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
 	mst_get_recurse(G, Source, Others, Vs),
 	append(PreorderTree, Others, Rest).
 
-mst_get_recurse(G, Source, [arc(G, V, Source, W) | Rest], [V | Vs]) :-
+mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
 	arc(G, V, Source, W), !,
 	mst_get(G, V, PreorderTree),
 	mst_get_recurse(G, Source, Others, Vs),
