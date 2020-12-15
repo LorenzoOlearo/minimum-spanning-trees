@@ -36,11 +36,7 @@ delete_graph(G) :-
 
 new_vertex(G, V) :-
 	graph(G),
-	vertex(G, V), !.
-
-new_vertex(G, V) :-
-	graph(G),
-	not(vertex(G, V)),
+	retractall(vertex(G, V)),
 	assert(vertex(G, V)).
 
 
@@ -89,11 +85,12 @@ graph_arcs(G, Es) :-
 % vertex_neighbors/3 true when V is a vertex in G and Ns is a list of all the
 % adjacent arcs (in a non oriented graph interpretation)
 
-vertex_neighbors(G, V, Ns) :-
+vertex_neighbors(G, V, Neighbors) :-
 	vertex(G, V),
-	findall(arc(G, V, N, W), arc(G, V, N, W), From),
-	findall(arc(G, X, V, W), arc(G, X, V, W), To),
-	append(From, To, Ns).
+	findall([G, V, N, W], arc(G, V, N, W), From),
+	findall([G, V, X, W], arc(G, X, V, W), To),
+	append(From, To, Ns),
+	build_arcs_from_list(Ns, Neighbors).
 
 
 
@@ -158,8 +155,7 @@ new_graph_from_rows(G, []) :- new_graph(G), !.
 
 new_graph_from_rows(G, [Row | Rows]) :-
 	Row =.. [row, V, U, W],
-	atomic(W),
-	not(atom(W)),
+	number(W),
 	new_graph(G),
 	new_vertex(G, V),
 	new_vertex(G, U),
@@ -233,7 +229,9 @@ heap_empty(H) :-
 
 % heap_not_empty/1 true if the H is not empty thus heap_empty/1 cannot be proven
 
-heap_not_empty(H) :- not(heap_empty(H)).
+heap_not_empty(H) :-
+	heap_has_size(H, S),
+	S > 0.
 
 
 
@@ -476,58 +474,54 @@ mst_prim(G) :-
 	S > 0, !,
 	heap_extract(G, _, V),
 	vertex_neighbors(G, V, Ns),
-	update_keys(G, Ns, V),
+	update_keys(G, Ns),
 	mst_prim(G).
 
 
 
 % mst_get/3
 
+% mst_get/3
+
 mst_get(G, Source, PreorderTree) :-
-	mst_get_neighbors(G, Source, Vs),
-	mst_get_recurse(G, Source, PreorderTree, Vs).
+	mst_get_neighbors(G, Source, Neighbors),
+	mst_get_recurse(Neighbors, PreorderTree).
 
 
 
 % mst_get_neighbors/3 support predicate for mst_get/3 could be incorporated in
 % mst_get/3
 
-mst_get_neighbors(G, Source, Neighbors) :-
-	findall([V, W], (vertex_previous(G, V, Source),
-					 arc(G, V, Source, W)), From),
-	findall([V, W], (vertex_previous(G, V, Source), arc(G, Source, V, W)), To),
-	append(From, To, Arcs),
-	sort(1, @=<, Arcs, VSort),
-	sort(2, @=<, VSort, WSort),
-	mst_get_extract_vertices(WSort, Neighbors).
+mst_get_neighbors(G, Source, WSort) :-
+	findall([G, Source, V, W] , (vertex_previous(G, V, Source),
+								   arc(G, V, Source, W)), From),
+	findall([G, Source, V, W], (vertex_previous(G, V, Source),
+								   arc(G, Source, V, W)), To),
+	append(From, To, List),
+	build_arcs_from_list(List, Arcs),
+	sort(3, @=<, Arcs, VSort),
+	sort(4, @=<, VSort, WSort).
 
 
 
-% mst_get_extract_vertices/2 support predicate for mst_get_neighbors/3
+% build_arcs_from_list/2
 
-mst_get_extract_vertices([], []) :- !.
+build_arcs_from_list([], []) :- !.
+build_arcs_from_list([Arg | Args], [Arc | Arcs]) :-
+	Arc =.. [arc | Arg],
+	build_arcs_from_list(Args, Arcs).
 
-mst_get_extract_vertices([[V, _] | Rest], [V | Vs]) :-
-	mst_get_extract_vertices(Rest, Vs).
 
 
-
-% mst_get_recurse/4 support predicate for mst_get, calls mst_get for all the
+% mst_get_recurse/2 support predicate for mst_get, calls mst_get for all the
 % adjacent nodes of Source given in as fouth argument
 
-mst_get_recurse(_, _, [], []) :- !.
+mst_get_recurse([], []) :- !.
 
-mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
-	arc(G, Source, V, W), !,
-	mst_get(G, V, PreorderTree),
-	mst_get_recurse(G, Source, Others, Vs),
-	append(PreorderTree, Others, Rest).
-
-mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
-	arc(G, V, Source, W), !,
-	mst_get(G, V, PreorderTree),
-	mst_get_recurse(G, Source, Others, Vs),
-	append(PreorderTree, Others, Rest).
+mst_get_recurse([arc(G, S, V, W) | Ns], [arc(G, S, V, W) | MST]) :-
+	mst_get(G, V, Tree),
+	mst_get_recurse(Ns, Rest),
+	append(Tree, Rest, MST).
 
 
 
@@ -540,13 +534,10 @@ init(H, G, [], Source) :-
 	!,
 	retract(vertex_key(G, Source, inf)),
 	assert(vertex_key(G, Source, 0)),
-	%modify_key(H, 0, inf, Source),
 	heap_decrease_key(H, inf, 0, Source),
-
 	heap_extract(H, 0, Source),
 	vertex_neighbors(G, Source, Ns),
-
-	update_keys(H, Ns, Source).
+	update_keys(H, Ns).
 
 init(H, G, [V | Vs], Source) :-
 	new_heap(H),
@@ -563,61 +554,27 @@ init(H, G, [V | Vs], Source) :-
 % specific arc, if there is no connection between the two vertices the
 % respective key in the heap entry will remains set to inf.
 
-update_keys(_, [], _) :- !.
+update_keys(_, []) :- !.
 
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, Source, V, W],
+update_keys(H, [arc(G, Source, V, W) | Ns]) :-
 	vertex_key(G, V, K),
 	heap_contains(H, K, V),
 	W < K, !,
 	retract(vertex_key(G, V, K)),
 	assert(vertex_key(G, V, W)),
-
-	%modify_key(H, W, K, V),
 	heap_decrease_key(H, K, W, V),
-
 	retractall(vertex_previous(G, V, _)),
 	assert(vertex_previous(G, V, Source)),
-	update_keys(H, Ns, Source).
+	update_keys(H, Ns).
 
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, V, Source, W],
+update_keys(H, [arc(G, _, V, W) | Ns]) :-
 	vertex_key(G, V, K),
 	heap_contains(H, K, V),
-	W < K, !,
-	retract(vertex_key(G, V, K)),
-	assert(vertex_key(G, V, W)),
-
-	%modify_key(H, W, K, V),
-	heap_decrease_key(H, K, W, V),
-
-	retractall(vertex_previous(G, V, _)),
-	assert(vertex_previous(G, V, Source)),
-	update_keys(H, Ns, Source).
-
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, Source, V, W],
-	vertex_key(G, V, K),
 	W >= K, !,
-	update_keys(H, Ns, Source).
+	update_keys(H, Ns).
 
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, V, Source, W],
-	vertex_key(G, V, K),
-	W >= K, !,
-	update_keys(H, Ns, Source).
-
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, Source, V, _],
-	vertex_key(G, V, K),
-	not(heap_contains(H, K, V)), !,
-	update_keys(H, Ns, Source).
-
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, V, Source, _],
-	vertex_key(G, V, K),
-	not(heap_contains(H, K, V)), !,
-	update_keys(H, Ns, Source).
+update_keys(H, [_ | Ns]) :-
+	update_keys(H, Ns).
 
 
 
