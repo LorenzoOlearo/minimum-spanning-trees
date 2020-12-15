@@ -5,6 +5,9 @@
 (defparameter *vertex-keys* (make-hash-table :test #'equal))
 (defparameter *previous* (make-hash-table :test #'equal))
 
+(defparameter *heaps* (make-hash-table :test #'equal))
+(defparameter default-heap-size 42)
+
 
 
 (defun is-graph (g)
@@ -136,6 +139,60 @@
   (format t "~a~%~%" g)
   (format t "~{~a~%~}~%" (graph-vertices g))
   (format t "~{~a~%~}" (graph-arcs g)))
+
+
+
+;;;; MINHEAP IMPLEMENTATION
+
+
+;;; Create a new heap in the hashtable *heaps*.
+;;; ---> heap-rep: (HEAP heap-id heap-size actual-heap)
+(defun new-heap (heap-id &optional (capacity default-heap-size))
+  (or (gethash heap-id *heaps*)
+      (setf (gethash heap-id *heaps*)
+            (list 'heap heap-id 0 (make-array capacity :initial-element nil)))))
+
+
+
+;;; Access function for a heap-rep.
+(defun heap-id (heap-rep)
+  (cond ((equal (first heap-rep) 'heap)
+         (second heap-id))
+        (T nil)))
+
+
+
+;;; Access function for a heap-rep.
+;;; Return the number of elements in the heap NOT the actual array dimension.
+(defun heap-size (heap-rep)
+  (cond ((equal (first heap-rep) 'heap)
+         (third heap-rep))
+        (T nil)))
+
+
+
+;;; Access function for a heap-rep.
+;;; Return the actual array representing the heap.
+(defun heap-actual-heap (heap-rep)
+  (cond ((equal (first heap-rep) 'heap)
+         (fourth heap-rep))
+        (T nil)))
+
+
+
+(defun heap-delete (heap-id)
+  (remhash heap-id *heaps*))
+
+
+
+(defun heap-empty (heap-id)
+  (equal (heap-size (gethash heap-id *heaps*)) 0))
+
+
+
+(defun heap-not-empty (heap-id)
+  (cond ((equal (heap-empty (heap-id)) nil) T)
+        (T nil)))
 
 
 
