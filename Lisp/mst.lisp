@@ -150,7 +150,10 @@
 (defun new-heap (heap-id &optional (capacity default-heap-size))
   (or (gethash heap-id *heaps*)
       (setf (gethash heap-id *heaps*)
-            (list 'heap heap-id 0 (make-array capacity :initial-element nil)))))
+            (list 'heap heap-id 0 (make-array capacity
+                                              :initial-element nil
+                                              :fill-pointer 0
+                                              )))))
 
 
 
@@ -186,13 +189,52 @@
 
 
 (defun heap-empty (heap-id)
-  (equal (heap-size (gethash heap-id *heaps*)) 0))
+  (cond ((zerop (third (gethash heap-id *heaps*))) T)
+        (T nil)))
 
 
 
 (defun heap-not-empty (heap-id)
-  (cond ((equal (heap-empty (heap-id)) nil) T)
+  (cond ((equal (heap-empty heap-id) nil))
         (T nil)))
+
+
+
+;;; Return a (list K V) where K is the minimum key in the heap and V the
+;;; associated value.
+(defun heap-head (heap-id)
+  (aref (fourth (gethash heap-id *heaps*)) 0))
+
+
+
+;;; Add an element to the heap while maintaining the min heap property.
+;;;
+;;; Min-Heap-Insert(A, Key)
+;;;     A.heap-size = A.heap-size + 1
+;;;     A[A.heap-size] = -inf
+;;;     Heap-Decrease-Key(A, A.heap-size, key)
+;;;
+;;; TODO: check out of bounds before updating (third heap-rep)
+(defun heap-insert (heap-id k v)
+  (setf (third (gethash heap-id *heaps*))
+        (+ (third (gethash heap-id *heaps*)) 1))
+  (let ((heap-actual-heap (fourth (gethash heap-id *heaps*))))))
+
+
+
+;;; HEAP DECREASE KEY
+;;;
+;;; heap-decrease-key(A, i, key)
+;;;     if key < A[i]
+;;;         error "the new key is less than the current one"
+;;;     A[i] = key
+;;;     while i > 1 AND A[Parent(i)] < A[i]
+;;;         switch A[i] with A[Parent(i)]
+;;;         i = Parent(i)
+;;;
+(defun heap-descrease-key (heap-id i k))
+
+
 
 
 
@@ -223,4 +265,17 @@
 (new-arc 'greg 'd 'f 14)
 (new-arc 'greg 'd 'c 7)
 (new-arc 'greg 'e 'd )
-;;; DEBUG ONLY REMOVE BEFORE RELEASE
+
+
+(new-heap 'hip 20)
+
+(setf (aref (fourth (gethash 'hip *heaps*)) 0) (list '1 'uno))
+(setf (aref (fourth (gethash 'hip *heaps*)) 1) (list '8 'otto))
+(setf (aref (fourth (gethash 'hip *heaps*)) 2) (list '2 'due))
+(setf (aref (fourth (gethash 'hip *heaps*)) 3) (list '3 'tre))
+(setf (aref (fourth (gethash 'hip *heaps*)) 4) (list '7 'sett))
+(setf (aref (fourth (gethash 'hip *heaps*)) 5) (list 'K6 'V6))
+(setf (aref (fourth (gethash 'hip *heaps*)) 6) (list 'K7 'V7))
+(setf (aref (fourth (gethash 'hip *heaps*)) 7) (list 'K8 'V8))
+(setf (aref (fourth (gethash 'hip *heaps*)) 8) (list 'K9 'V9))
+(setf (aref (fourth (gethash 'hip *heaps*)) 9) (list 'K9 'V9))
