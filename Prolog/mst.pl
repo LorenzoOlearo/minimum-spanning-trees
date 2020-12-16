@@ -163,14 +163,17 @@ new_graph_from_rows(G, [Row | Rows]) :-
 	new_graph_from_rows(G, Rows).
 
 
+
 % write_graph/3 writes a graph G along with its arcs and vertices to a CSV file
 % represented by FileName
 
 write_graph(G, FileName, edges) :-
+	!,
 	write_arcs_in_rows(G, Rows),
 	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
 write_graph(G, FileName, graph) :-
+	!,
 	graph_arcs(G, Arcs),
 	write_graph(Arcs, FileName, edges).
 
