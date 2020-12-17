@@ -20,7 +20,7 @@ use_module(library(csv)).
 %	The predicate is always true
 %
 %	@arg Graph term to be asserted as graph
-%
+
 new_graph(G) :- graph(G), !.
 
 new_graph(G) :- assert(graph(G)), !.
@@ -29,11 +29,11 @@ new_graph(G) :- assert(graph(G)), !.
 %!	delete_graph(+Graph:graph) is det
 %
 %	Predicate that retracts all arc/4, vertex/2 and graph/1 associated with
-%	graph form the knowledge base
+%	graph form the knowledge base <br>
 %	The predicate is always true
 %
-%	@arg Graph
-%
+%	@arg Graph graph object of the action
+
 delete_graph(G) :-
 	retractall(arc(G, _, _, _)),
 	retractall(vertex(G, _)),
@@ -43,12 +43,12 @@ delete_graph(G) :-
 %!	new_vertex(+Graph:graph, +Vertex:term) is semidet
 %
 %	Predicate that asserts a vertex/2 that associates Graph with Vertex if not
-%	already associated
+%	already associated <br>
 %	The predicate is false if Graph is not a graph, else is true
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg Vertex term to be asserted as vertex
-%
+
 new_vertex(G, V) :-
 	vertex(G, V), !.
 
@@ -60,13 +60,13 @@ new_vertex(G, V) :-
 %!	graph_vertices(+Graph:graph, -Vertices:list) is semidet
 %
 %	Predicate that is true when Vertices contains every vertex/2 associated
-%	with the graph Graph
+%	with the graph Graph <br>
 %	The predicate is false if Graph is not a graph
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg Vertices list of vertex/2 associated with Graph, empty if Graph is an
 %		empty graph
-%
+
 graph_vertices(G, Vs) :-
 	graph(G),
 	findall(vertex(G, V), vertex(G, V), Vs).
@@ -75,26 +75,28 @@ graph_vertices(G, Vs) :-
 %!	list_vertices(+Graph:graph) is det
 %
 %	Predicate that prints listing of all vertex/2 associated with the graph
-%	Graph
+%	Graph <br>
 %	The predicate is always true
 %
-%	@arg Graph
-%
+%	@arg Graph graph object of the action
+
 list_vertices(G) :- listing(vertex(G, _)).
 
 
-%!	new_arc(+Graph:graph, +Source:vertex, +Destination:vertex, +Weight:number) is semidet
+%!	new_arc(+Graph:graph, +Source:vertex,
+%!	+Destination:vertex, +Weight:number) is semidet
 %
-%	Predicate that asserts an arc/4 from Source to Destination in the graph.
-%	Graph with assigned weight Weight
+%	Predicate that asserts an arc/4 from Source to Destination in
+%	the graph <br>
+%	Graph with assigned weight Weight <br>
 %	The predicate retracts any preexisting arc/4 joining Source and
 %	Destination
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg Source vertex the arc starts from
 %	@arg Destination vertex the arc arrives in
 %	@arg Weight weight of the arc
-%
+
 new_arc(G, U, V, Weight) :-
 	graph(G),
 	vertex(G, U),
@@ -108,7 +110,7 @@ new_arc(G, U, V, Weight) :-
 %
 %	Assumes weight of the arc is 1
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg Source vertex the arc starts from
 %	@arg Destination vertex the arc arrives in
 %	@see new_arc/4
@@ -119,10 +121,10 @@ new_arc(G, U, V) :- new_arc(G, U, V, 1).
 %!	graph_arcs(+Graph:graph, -Arcs:list) is semidet
 %
 %	Predicate that is true when Arcs is a list of all the arc/4 associated
-%	with the graph Graph
+%	with the graph Graph <br>
 %	The predicate is false when Graph is not a graph
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg Arcs list of arc/4 associated with Graph, empty if Graph is an empty
 %		graph
 
@@ -134,12 +136,13 @@ graph_arcs(G, Arcs) :-
 %!	vertex_neighbors(+Graph:graph, +Vertex:vertex, -Neighbors:list) is semidet
 %
 %	Predicate that is true when Neighbors is the list of all the arc/4 that
-%	are incident to Vertex
-%	The predicate is false when Vertex is not a vertex associated with Graph
+%	are incident to Vertex <br>
+%	The predicate is false when Vertex is not a vertex associated with
+%	 Graph <br>
 %	This predicate is to be used in an undirected graph context
 %
-%	@arg Graph
-%	@arg Vertex
+%	@arg Graph graph object of the action
+%	@arg Vertex end-point of the arcs in Neighbors
 %	@arg Neighbors list of arc/4 that are incident to Vertex, with the oreder
 % 		of the arguments arranged to have Vertex as the second argument
 %		regardless of the order they are arranged in the knowledge base
@@ -152,16 +155,17 @@ vertex_neighbors(G, V, Neighbors) :-
 	build_arcs_from_list(Ns, Neighbors).
 
 
-%!	vertex_neighbors_oriented(+Graph:graph, +Vertex:vertex, -Neighbors:list)
-%		is semidet
+%!	vertex_neighbors_oriented(+Graph:graph,
+%!	+Vertex:vertex, -Neighbors:list) is semidet
 %
 %	Predicate that is true when Neighbors is the list of all the arc/4 that
-%	are have Vertex as tail
-%	The predicate is false when Vertex is not a vertex associated with Graph
+%	are have Vertex as tail <br>
+%	The predicate is false when Vertex is not a vertex associated with
+%	Graph <br>
 %	This predicate is to be used in a directed graph context
 %
-%	@arg Graph
-%	@arg Vertex
+%	@arg Graph graph object of the action
+%	@arg Vertex tail of the arcs in Neighbors
 %	@arg Neighbors list of arc/4 that have Vertex as tail
 
 vertex_neighbors_oriented(G, V, Ns) :-
@@ -172,11 +176,11 @@ vertex_neighbors_oriented(G, V, Ns) :-
 %!	adjs(+Graph:graph, +Vertex:vertex, -Adjacents:list) is semidet
 %
 %	Predicate that is true when Adjacents is the list of all the vertex/2
-%	that are joined to Vertex by an arc
+%	that are joined to Vertex by an arc <br>
 %	This predicate is to be used in an undirected graph context
 %
-%	@arg Graph
-%	@arg Vertex
+%	@arg Graph graph object of the action
+%	@arg Vertex vertex the arcs in Adjacents are joined to
 %	@arg Adjacents list of vertex/2 joined to Vertex by an arcs
 
 adjs(G, V, Vs) :-
@@ -189,11 +193,11 @@ adjs(G, V, Vs) :-
 %!	adjs_oriented(+Graph:graph, +Vertex:vertex, -Adjacents:list) is semidet
 %
 %	Predicate that is true when Adjacents is the list of all the vertex/2
-%	that are head to an arc having Vertex as tail
+%	that are head to an arc having Vertex as tail <br>
 %	This predicate is to be used in a directed graph context
 %
-%	@arg Graph
-%	@arg Vertex
+%	@arg Graph graph object of the action
+%	@arg Vertex vertex the arcs in Adjacents are joined to
 %	@arg Adjacents list of vertex/2 that are head of an arc having Vertex as
 %		tail
 
@@ -204,22 +208,22 @@ adjs_oriented(G, V, Vs) :-
 
 %!	list_arcs(+Graph:graph) is semidet
 %
-%	Predicate that prints the listing of arc/4 associated with G
+%	Predicate that prints the listing of arc/4 associated with G <br>
 %	The predicate is false when Graph is not a graph
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 
-list_arcs(G) :- 
+list_arcs(G) :-
 	graph(G),
 	listing(arc(G, _, _, _)).
 
 
 %!	list_graph(+Graph:graph) is semidet
 %
-%	Predicate that prints the listing of arcs/4, vertices/2
+%	Predicate that prints the listing of arc/4, vertices/2 <br>
 %	The predicate is false when Graph is not a graph
 %
-%	@args Graph
+%	@arg Graph graph object of the action
 
 list_graph(G) :-
 	graph(G),
@@ -231,13 +235,13 @@ list_graph(G) :-
 %
 %	Predicate that reads arc/4 of Graph from a tab separated csv file,
 %	every arc will be written as a triple {Source Destination Weight}
-%	omitting the term representing the graph
-%	Graph will be asserted as graph if not already a graph
-%	Every vertex present as end-point of the arc will be asserted as 
-%	vertex of Graph
+%	omitting the term representing the graph <br>
+%	Graph will be asserted as graph if not already a graph <br>
+%	Every vertex present as end-point of the arc will be asserted as
+%	vertex of Graph <br>
 %	Every arc will be asserted as arc of Graph
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg FileName the path of the input csv file
 
 read_graph(G, FileName) :-
@@ -247,14 +251,14 @@ read_graph(G, FileName) :-
 
 %!	new_graph_from_rows(+Graph:graph, +Rows:rows) is semidet
 %
-%	Support predicate for read_graph/2
+%	Support predicate for read_graph/2 <br>
 %	Predicate to create a graph G given a list in
-%	the format[row(V, U, W)] where V is source vertex, U is destination 
-%	vertex and W is weight of the arc between the two
+%	the format[row(V, U, W)] where V is source vertex, U is destination
+%	vertex and W is weight of the arc between the two <br>
 %	This Predicate asserts graph/1, vertex/2, arc/4 as needed to represent
 %	the arcs described in Rows
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg Rows list of row/3 elements
 
 new_graph_from_rows(G, []) :- new_graph(G), !.
@@ -274,7 +278,7 @@ new_graph_from_rows(G, [row(V, U, W) | Rows]) :-
 %	every arc will be written as a triple {Source Destination Weight}
 %	omitting the term representing the graph
 %
-%	@arg Graph
+%	@arg Graph graph object of the action
 %	@arg FileName the path of the output csv file
 
 write_graph(G, FileName, edges) :-
@@ -290,9 +294,9 @@ write_graph(G, FileName, graph) :-
 write_graph(G, FileName) :- write_graph(G, FileName, graph).
 
 
-%!	write_arcs_in rows(+Arcs:list, -Rows:list) is semidet
+%!	write_arcs_in_rows(+Arcs:list, -Rows:list) is semidet
 %
-%	Support Predicate for write_graph/2
+%	Support Predicate for write_graph/2 <br>
 %	Predicate that is true when Rows is a list of row/3 such that
 %	for every arc(G, V, U, W) in Arcs it contains a row(V, U, W)
 %
