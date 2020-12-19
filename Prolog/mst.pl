@@ -11,7 +11,29 @@ use_module(library(csv)).
 
 % Informs the interpreter that the definition of the predicates may change
 % during execution (using assert/1 and/or retract/1)
-:- dynamic graph/1, vertex/2, arc/4.
+:- dynamic
+
+%!	graph(+Graph:term) is semidet
+%
+%	Predicate that is true when the term Graph is a graph
+
+graph/1,
+
+
+%!	vertex(+Graph:graph, +Vertex:vertex) is semidet
+%
+%	Predicate that is true when Vertex is a vertex in the graph Graph
+
+vertex/2,
+
+
+
+%!	arc(+Graph:graph, +Source:vertex, +Destination:vertex, +Weight:number)
+%
+%	Predicate that is true when Source and Destination are two vertices in
+%	the graph Graph joined by an arc of weight Weight
+
+arc/4.
 
 
 %!	new_graph(+Graph:term) is det
@@ -275,7 +297,7 @@ new_graph_from_rows(G, [row(V, U, W) | Rows]) :-
 %!	write_graph(+Graph:graph, +FileName:path) is semidet
 %
 %	Predicate that writes arc/4 of Graph to a tab separated csv file,
-%	every arc will be written as a triple {Source Destination Weight}
+%	every arc will be written as a triple {Source, Destination, Weight}
 %	omitting the term representing the graph
 %
 %	@arg Graph graph object of the action
@@ -314,68 +336,105 @@ write_arcs_in_rows([Arc | Arcs], [Row | Rows]) :-
 
 % Informs the interpreter that the definition of the predicates may change
 % during execution (using assert/1 and/or retract/1).
-:- dynamic heap/2, heap_entry/4.
+:- dynamic
+
+%!	heap(+Heap:term, -Size:number) is semidet
+%
+%	Predicate that is true when Heap is a heap of size Size
+
+heap/2,
+
+
+%!	heap_entry(+Heap:heap, -Position:number, +Key:number, -Value:term) is nondet
+%
+%	Predicate that is true when Value is stored in the heap Heap with key Key
+%	and in position Position in the array representing the heap
+
+heap_entry/4.
 
 
 
-% new_heap/1 adds a new heap in the program's knowledge base
+%!	new_heap(+Heap:term) is det
+%
+%	Predicate that asserts heap/2 associated with Heap if not already
+%	existing<br>
+%	This predicate is always true
+%
+%	@arg Heap the term to be asserted as heap
 
 new_heap(H) :- heap(H, _), !.
+
 new_heap(H) :- assert(heap(H, 0)), !.
 
 
-
-% delete_heap/1 deletes the entire heap from the program's knownledge base
+%!	delete_heap(+Heap:heap) is det
+%
+%	Predicate that retracts heap/1 and all heap_entry/4 associated with
+%	Heap<br>
+%	This predicate is always true
+%
+%	@arg Heap heap object of the action
 
 delete_heap(H) :-
 	retractall(heap_entry(H, _, _, _)),
 	retractall(heap(H, _)).
 
 
-
-% heapsize/2 true when H is an heap and S its size
+%!	heap_has_size(+Heap:heap, -Size:number) is semidet
+%
+%	Predicate that is true when Size is the size of the heap Heap
+%
+%	@arg Heap heap object of the action
+%	@arg Size size of the heap
 
 heap_has_size(H, S) :- heap(H, S).
 
 
-
-% heap_empty/1 true if the heap H is empty
+%!	heap_empty(+Heap:heap) is semidet
+%
+%	Predicate that is true when Heap is a empty heap
+%
+%	@arg Heap heap object of the action
 
 heap_empty(H) :-
 	heap_has_size(H, S),
 	S = 0.
 
 
-
-% heap_not_empty/1 true if the H is not empty thus heap_empty/1 cannot be proven
+%!	heap_not_empty(+Heap:heap) is semidet
+%
+%	Predicate that is true if the Heap is a non-empty heap
+%
+%	@arg Heap heap object of the action
 
 heap_not_empty(H) :-
 	heap_has_size(H, S),
 	S > 0.
 
 
-
-% heap_head/3 true when the minimum key in the heap H is K and V is the
-% associated value
+%!	heap_head(+Heap:heap, -Key:number, -Value:term) is semidet
+%
+%	Predicate that is true when the minimum key in the heap Heap is Key and
+%	Value is the associated value
+%
+%	@arg Heap heap object of the action
+%	@arg Key key of the first element of the heap
+%	@arg Value value of the firt element of the heap
 
 heap_head(H, K, V) :-
 	heap_entry(H, 1, K, V).
 
 
-
-% min_of/2 support predicate for heap_head/2, given a list of keys and a key K,
-% the predicate is true if K is the minimum element
-
-min_of([K], K) :- !.
-
-min_of([K1 | Keys], K) :-
-	K =< K1,
-	min_of(Keys, K).
-
-
-
-% heap_extract/3 true when K, V are key and value of the head of the heap.
-% Changes the knowledge base removing the head from the heap
+%!	heap_extract(+Heap:heap, -Key:number, -Value:term) is semidet
+%
+%	Predicate that is true when Key, Value are key and value of the head
+%	of the heap Heap<br>
+%	This predicate changes the knowledge base removing the head from the heap
+%	and restructuring the heap to mantain the heap property
+%
+%	@arg Heap heap object of the action
+%	@arg Key key of the head of the heap
+%	@arg Value value of the head of the heap
 
 heap_extract(H, K, V) :-
 	heap_has_size(H, 1), !,
@@ -396,9 +455,16 @@ heap_extract(H, K, V) :-
 	heapify(H, 1).
 
 
-
-% heap_decrease_key/3 support procedure for heap operations, moves a heap_entry
-% from the position P to a new position according to the new key K
+%!	heap_decrease_key(+Heap:heap, +Position:number, +NewKey:number) is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that changes the key of the heap_entry/4 with position Position
+%	and moves it to a new position according to NewKey if NewKey is lesser
+%	then the preexisting key, else the predicate fails
+%
+%	@arg Heap heap object of the action
+%	@arg Position index of the heap array indexing the heap_entry/4
+%	@arg NewKey new value to be associated with the heap_entry/4
 
 heap_decrease_key(H, P, NewKey) :-
 	heap_entry(H, P, OldKey, V),
@@ -412,9 +478,14 @@ heap_decrease_key(H, OldKey, NewKey, V) :-
 	heap_move_up(H, P).
 
 
-
-% heap_move_up/2 support procedure for heap operations, moves a heap_entry,
-% in a heap H at position P, up until needed according to its key
+%!	heap_move_up(+Heap:heap, +Position:number) is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that moves a heap_entry/4, in a heap Heap at position Position,
+%	up until needed according to its key
+%
+%	@arg Heap heap object of the action
+%	@arg Position index of the heap array indexing the heap_entry/4
 
 heap_move_up(_, 1) :- !.
 
@@ -435,9 +506,15 @@ heap_move_up(H, P) :-
 	heap_move_up(H, PPar).
 
 
-
-% heap_insert/3 asserts a new heap_entry with key K and value V and keeps the
-% heap-propriety
+%!	heap_insert(+Heap:heap, +Key:number, +Value:term) is semidet
+%
+%	Predicate that asserts a new heap_entry/4 with key Key and value Value<br>
+%	This predicate changes the knowledge base adding the new heap_entry/4 in
+%	the heap and restructuring the heap to mantain the heap property
+%
+%	@arg Heap heap object of the action
+%	@arg Key the key of the new heap_entry/4
+%	@arg Value the value of the new heap_entry/4
 
 heap_insert(H, K, V) :-
 	heap_has_size(H, S),
@@ -449,8 +526,13 @@ heap_insert(H, K, V) :-
 
 
 
-% heapify/2 restructures the heap taking for granted the two subtrees from P are
-% already heaps
+%!	heapify(+Heap:heap, +Position:number) is semidet
+%
+%	Predicate that restructures the heap taking for granted the two subtrees
+%	from P are already heaps
+%
+%	@arg Heap heap object of the action
+%	@arg Position index of the heap array to heapify
 
 heapify(H, P) :-
 	heap_has_size(H, S),
@@ -503,8 +585,16 @@ heapify(H, P) :-
 
 
 
-% heapify_on_different/3 support procedure for heap operations, calls an heapify
-% if Min is different from P
+%!	heapify_on_different(+Heap:heap, +To_heapify:number, +Position:number)
+%!	is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that calls an heapify/2 on To_heapify if it is different from
+%	Position
+%
+%	@arg Heap heap object of the action
+%	@arg To_heapify index of the heap array to heapify
+%	@arg Position generally the position previosly heapified
 
 heapify_on_different(H, Min, Min) :- ! , heap(H, _).
 
@@ -516,17 +606,28 @@ heapify_on_different(H, Min, P) :-
 
 
 
-% min_key/2 true when the third argument in form [K, P] is the couple of [K, P]
-% with minimum K between [K1, P1], [K2, P2]
+%	min_key([+Key1:number, +Position1:number],
+%!			[+Key2:number, +Position2:number]
+%!			[-KeyMin:number, -PositionMin:number]) is det
+%
+%	Support predicate for heap operations<br>
+%	Predicate that is true when [KeyMin, PositionMin] is the couple with
+%	minimum key between [Key1, Position1] and [Key2, Position2]
 
 min_key([K1, P1], [K2, _], [K1, P1]) :- K1 =< K2, !.
 
 min_key([K1, _], [K2, P2], [K2, P2]) :- K1 > K2, !.
 
 
-
-% heap_switch/2 support procedure for heap operations, switches positions in H
-% between the heap_entry at the given positions
+%!	heap_switch(+Heap:heap, +Position1:number, +Position2:number) is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that switches positions in Heap
+%	between the heap_entry/4 at the given positions
+%
+%	@arg Heap heap object of the action
+%	@arg Position1 position of the first heap_entry/4
+%	@arg Position2 position of the second heap_entry/4
 
 heap_switch(H, P, P) :- !, heap(H, _).
 
@@ -541,9 +642,23 @@ heap_switch(H, P1, P2) :-
 	assert(heap_entry(H, P1, K2, V2)).
 
 
-
-% modify_key/4 replaces the OldKey associated with a vertex V
-% in a heap H with the key NewKey without altering the min-heap property
+%!	modify_key(+Heap:heap, +NewKey:number, +OldKey:number, +Value:term)
+%!	is nondet
+%
+%	Predicate replaces the a heap_entry with key OldKey and value Value with
+%	one with NewKey as key and the same Value<br>
+%	This predicate changes the knowledge base changing the heap_entry/4 in
+%	the heap and restructuring the heap to mantain the heap property<br>
+%	This predicate is meant for a context with unique couple {key, value},
+%	else it is expected to work fine and change all the unifing heap_entry/4
+%	but the feature is untested<br>
+%	This predicate is meant to be used only for NewKey > OldKey for
+%	heap_decrease_key/3 is way more efficient in NewKey =< OldKey use case
+%
+%	@arg Heap heap object of the action
+%	@arg NewKey key to be assigned at heap_entry/4
+%	@arg OldKey key of preexisting heap_entry/4
+%	@arg Value	value of preexisting heap_entry/4
 
 modify_key(H, NewKey, OldKey, V) :-
 	heap_decrease_key(H, OldKey, -inf, V),
@@ -552,7 +667,12 @@ modify_key(H, NewKey, OldKey, V) :-
 
 
 
-% list_heap/1 lists the current internal heap representation on the console
+%!	list_heap(+Heap:heap) is semidet
+%
+%	Predicate that prints the listing of heap/2 and heap_entry/4 associated
+%	with heap Heap
+%
+%	@arg Heap heap object of the action
 
 list_heap(H) :-
 	heap(H, _),
@@ -561,8 +681,14 @@ list_heap(H) :-
 
 
 
-% heap_contains/3 is true when the heap H contains the entry with key K and
-% value V
+%!	heap_contains(+Heap:heap, +Key:number, +Value:term) is semidet
+%
+%	Predicate that is true when the heap Heap contains the heap_entry/4 with
+%	key Key and value Value
+%
+%	@arg Heap heap object of the action
+%	@arg Key key of the heap_entry/4
+%	@arg Value value of the heap_entry/4
 
 heap_contains(H, K, V) :-
 	heap_entry(H, _, K, V).
