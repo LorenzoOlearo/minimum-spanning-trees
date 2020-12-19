@@ -294,16 +294,16 @@
 ;;; min-heapify(A, i)
 ;;;     l = left(i)
 ;;;     r = right(i)
-;;;     if l <= A.heapsize AND A[l] < A[i]
+;;;     if l < A.heapsize AND A[l] < A[i]
 ;;;         minimum = l
 ;;;     else minimum = i
-;;;     if r <= A.heapsize AND A[r] < A[minimum]
+;;;     if r < A.heapsize AND A[r] < A[minimum]
 ;;;         minimum = r
 ;;;     if minimum /= i
 ;;;         heap-switch A[i] with A[minimum]
 ;;;     min-heapify(A, minimum)
 ;;;
-
+(defun heapify )
 
 
 
