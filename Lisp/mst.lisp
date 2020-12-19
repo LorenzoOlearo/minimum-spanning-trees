@@ -151,9 +151,7 @@
   (or (gethash heap-id *heaps*)
       (setf (gethash heap-id *heaps*)
             (list 'heap heap-id 0 (make-array capacity
-                                              :initial-element nil
-                                              :fill-pointer 0
-                                              )))))
+                                              :initial-element nil)))))
 
 
 
@@ -168,9 +166,7 @@
 ;;; Access function for a heap-rep.
 ;;; Return the number of elements in the heap NOT the actual array dimension.
 (defun heap-size (heap-rep)
-  (cond ((equal (first heap-rep) 'heap)
-         (third heap-rep))
-        (T nil)))
+  (third heap-rep))
 
 
 
@@ -214,11 +210,24 @@
 ;;;     A[A.heap-size] = -inf
 ;;;     Heap-Decrease-Key(A, A.heap-size, key)
 ;;;
-;;; TODO: check out of bounds before updating (third heap-rep)
-(defun heap-insert (heap-id k v)
-  (setf (third (gethash heap-id *heaps*))
-        (+ (third (gethash heap-id *heaps*)) 1))
-  (let ((heap-actual-heap (fourth (gethash heap-id *heaps*))))))
+(defun heap-insert (id k v)
+  (cond ((and (< (heap-size (gethash id *heaps*))
+                 (length (heap-actual-heap (gethash id *heaps*))))
+              (equal (aref (heap-actual-heap (gethash id *heaps*))
+                           (heap-size (gethash id *heaps*)))
+                     nil))
+         (setf (aref (heap-actual-heap (gethash id *heaps*))
+                     (heap-size (gethash id *heaps*)))
+               (list 'inf v))
+         (setf (gethash id *heaps*)
+               (list 'heap
+                     id
+                     (+ 1 (heap-size (gethash id *heaps*)))
+                     (heap-actual-heap (gethash id *heaps*))))
+         (heap-decrease-key (heap-actual-heap (gethash id *heaps*))
+                            (- (heap-size (gethash id *heaps*)) 1)
+                            k))
+        (T (error "heap is full"))))
 
 
 
@@ -232,13 +241,85 @@
 ;;;         switch A[i] with A[Parent(i)]
 ;;;         i = Parent(i)
 ;;;
-(defun heap-descrease-key (heap-id i k))
+(defun heap-decrease-key (heap i k)
+  (cond ((or (equal (first (aref heap i)) 'inf)
+             (equal (> (aref heap i)) k))
+         (setf (aref heap i) (list k (second (aref heap i))))
+         (heap-decrease-key-shift-up heap i))
+        (T (error "new key is greater"))))
+
+
+
+(defun heap-decrease-key-shift-up (heap i)
+  (cond ((and (> i 0)
+              (> (first (aref heap (floor i 2))) (first (aref heap i))))
+         (let ((val (aref heap i)) (parent (aref heap (floor i 2))))
+           (setf (aref heap (floor i 2)) val)
+           (setf (aref heap i) parent)
+           (heap-decrease-key-shift-up heap (floor i 2))))
+        (T T)))
+
+
+
+;;; HEAP-EXTRACT-MIN
+;;;
+;;; heap-extract-min(A)
+;;;     if A.heap-size < 1
+;;;         error "heap underflow"
+;;;     min = A[1]
+;;;     A[1] = A[A.heapsize]
+;;;     A.heapsize = A.heapsize - 1
+;;;     min-heapify(A, 1)
+;;;     return min
+;;;
+(defun heap-extract (heap-id)
+  (cond ((< (third (gethash heap-id *heaps*)) 1)
+         (error "heap underflow"))
+        (T (setf (third (gethash heap-id *heaps*))
+                 (- (heap-size (gethash heap-id *heaps*)) 1))
+           (rotatef (aref (fourth (gethash heap-id *heaps*))
+                          0)
+                    (aref (fourth (gethash heap-id *heaps*))
+                          (heap-size (gethash heap-id *heaps*))))
+           (car (cons (aref (fourth (gethash heap-id *heaps*))
+                              (heap-size (gethash heap-id *heaps*)))
+                        (setf (aref (fourth (gethash heap-id *heaps*))
+                                    (third (gethash heap-id *heaps*)))
+                              nil))))))
+
+
+
+;;; MIN-HEAPIFY
+;;;
+;;; min-heapify(A, i)
+;;;     l = left(i)
+;;;     r = right(i)
+;;;     if l <= A.heapsize AND A[l] < A[i]
+;;;         minimum = l
+;;;     else minimum = i
+;;;     if r <= A.heapsize AND A[r] < A[minimum]
+;;;         minimum = r
+;;;     if minimum /= i
+;;;         heap-switch A[i] with A[minimum]
+;;;     min-heapify(A, minimum)
+;;;
 
 
 
 
+(defun heap-reset (heap-id)
+  (clrhash *heaps*)
+  (new-heap heap-id 20)
+  (heap-insert heap-id 1 'uno)
+  (heap-insert heap-id 8 'otto)
+  (heap-insert heap-id 3 'tre)
+  (heap-insert heap-id 2 'due)
+  (heap-insert heap-id 10 'dieci)
+  (heap-insert heap-id 5 'cinque))
 
-;;; DEBUG ONLY REMOVE BEFORE RELEASE
+
+
+;;;; DEBUG ONLY REMOVE BEFORE RELEASE
 (new-graph 'greg)
 
 (new-vertex 'greg 'a)
@@ -269,13 +350,10 @@
 
 (new-heap 'hip 20)
 
-(setf (aref (fourth (gethash 'hip *heaps*)) 0) (list '1 'uno))
-(setf (aref (fourth (gethash 'hip *heaps*)) 1) (list '8 'otto))
-(setf (aref (fourth (gethash 'hip *heaps*)) 2) (list '2 'due))
-(setf (aref (fourth (gethash 'hip *heaps*)) 3) (list '3 'tre))
-(setf (aref (fourth (gethash 'hip *heaps*)) 4) (list '7 'sett))
-(setf (aref (fourth (gethash 'hip *heaps*)) 5) (list 'K6 'V6))
-(setf (aref (fourth (gethash 'hip *heaps*)) 6) (list 'K7 'V7))
-(setf (aref (fourth (gethash 'hip *heaps*)) 7) (list 'K8 'V8))
-(setf (aref (fourth (gethash 'hip *heaps*)) 8) (list 'K9 'V9))
-(setf (aref (fourth (gethash 'hip *heaps*)) 9) (list 'K9 'V9))
+(heap-insert 'hip 1 'uno)
+(heap-insert 'hip 8 'otto)
+(heap-insert 'hip 3 'tre)
+(heap-insert 'hip 2 'due)
+(heap-insert 'hip 10 'dieci)
+(heap-insert 'hip 5 'cinque)
+;;;; DEBUG ONLY REMOVE BEFORE RELEASE
