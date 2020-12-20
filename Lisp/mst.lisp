@@ -258,6 +258,8 @@
          (heap-decrease-key-shift-up heap (floor i 2)))
         (T T)))
 
+
+
 (defun aswitch (arr i j)
   (let ((vi (aref arr i))
         (vj (aref arr j)))
@@ -282,10 +284,9 @@
          (error "HEAP UNDERFLOW ERROR"))
         (T (setf (third (gethash heap-id *heaps*))
                  (- (heap-size (gethash heap-id *heaps*)) 1))
-           (rotatef (aref (fourth (gethash heap-id *heaps*))
-                          0)
-                    (aref (fourth (gethash heap-id *heaps*))
-                          (heap-size (gethash heap-id *heaps*))))
+           (aswitch (fourth (gethash heap-id *heaps*))
+                    0
+                    (heap-size (gethash heap-id *heaps*)))
            (heapify heap-id 0)
            (car (cons (aref (fourth (gethash heap-id *heaps*))
                             (heap-size (gethash heap-id *heaps*)))
