@@ -8,7 +8,7 @@
 (defparameter *heaps* (make-hash-table :test #'equal))
 (defparameter default-heap-size 42)
 
-
+(defconstant inf most-positive-fixnum)
 
 (defun is-graph (g)
   (gethash g *graphs*))
@@ -84,13 +84,13 @@
 ;;; Note that the implementation assumes a non oriented graph.
 (defun graph-vertex-neighbors (g v)
   (remove nil
-             (mapcar #'(lambda (arc)
-                         (cond ((equal (third arc) v)
-                                arc)
-                               ((equal (fourth arc) v)
-                                arc)
-                               (T nil)))
-                     (graph-arcs g))))
+          (mapcar #'(lambda (arc)
+                      (cond ((equal (third arc) v)
+                             arc)
+                            ((equal (fourth arc) v)
+                             arc)
+                            (T nil)))
+                  (graph-arcs g))))
 
 
 
@@ -114,13 +114,13 @@
 ;;; Note that the implementation assumes a non oriented graph.
 (defun graph-vertex-adjacent (g v)
   (remove nil
-             (mapcar #'(lambda (arc)
-                         (cond ((equal (third arc) v)
-                                (remove-last arc))
-                               ((equal (fourth arc) v)
-                                (remove-last  arc))
-                               (T nil)))
-                     (graph-arcs g))))
+          (mapcar #'(lambda (arc)
+                      (cond ((equal (third arc) v)
+                             (remove-last arc))
+                            ((equal (fourth arc) v)
+                             (remove-last  arc))
+                            (T nil)))
+                  (graph-arcs g))))
 
 
 
@@ -166,7 +166,9 @@
 ;;; Access function for a heap-rep.
 ;;; Return the number of elements in the heap NOT the actual array dimension.
 (defun heap-size (heap-rep)
-  (third heap-rep))
+  (cond ((equal (first heap-rep) 'heap)
+         (third heap-rep))
+        (T nil)))
 
 
 
@@ -218,7 +220,7 @@
                      nil))
          (setf (aref (heap-actual-heap (gethash id *heaps*))
                      (heap-size (gethash id *heaps*)))
-               (list 'inf v))
+               (list inf v))
          (setf (gethash id *heaps*)
                (list 'heap
                      id
@@ -242,8 +244,7 @@
 ;;;         i = Parent(i)
 ;;;
 (defun heap-decrease-key (heap i k)
-  (cond ((or (equal (first (aref heap i)) 'inf)
-             (equal (> (aref heap i)) k))
+  (cond ((> (first (aref heap i)) k)
          (setf (aref heap i) (list k (second (aref heap i))))
          (heap-decrease-key-shift-up heap i))
         (T (error "new key is greater"))))
@@ -253,11 +254,15 @@
 (defun heap-decrease-key-shift-up (heap i)
   (cond ((and (> i 0)
               (> (first (aref heap (floor i 2))) (first (aref heap i))))
-         (let ((val (aref heap i)) (parent (aref heap (floor i 2))))
-           (setf (aref heap (floor i 2)) val)
-           (setf (aref heap i) parent)
-           (heap-decrease-key-shift-up heap (floor i 2))))
+         (aswitch heap (floor i 2) i)
+         (heap-decrease-key-shift-up heap (floor i 2)))
         (T T)))
+
+(defun aswitch (arr i j)
+  (let ((vi (aref arr i))
+        (vj (aref arr j)))
+    (setf (aref arr i) vj)
+    (setf (aref arr j) vi)))
 
 
 
@@ -274,18 +279,19 @@
 ;;;
 (defun heap-extract (heap-id)
   (cond ((< (third (gethash heap-id *heaps*)) 1)
-         (error "heap underflow"))
+         (error "HEAP UNDERFLOW ERROR"))
         (T (setf (third (gethash heap-id *heaps*))
                  (- (heap-size (gethash heap-id *heaps*)) 1))
            (rotatef (aref (fourth (gethash heap-id *heaps*))
                           0)
                     (aref (fourth (gethash heap-id *heaps*))
                           (heap-size (gethash heap-id *heaps*))))
+           (heapify heap-id 0)
            (car (cons (aref (fourth (gethash heap-id *heaps*))
-                              (heap-size (gethash heap-id *heaps*)))
-                        (setf (aref (fourth (gethash heap-id *heaps*))
-                                    (third (gethash heap-id *heaps*)))
-                              nil))))))
+                            (heap-size (gethash heap-id *heaps*)))
+                      (setf (aref (fourth (gethash heap-id *heaps*))
+                                  (third (gethash heap-id *heaps*)))
+                            nil))))))
 
 
 
@@ -303,6 +309,27 @@
 ;;;         heap-switch A[i] with A[minimum]
 ;;;     min-heapify(A, minimum)
 ;;;
+(defun heapify (heap-id i)
+  (let ((l (* i 2))
+        (r (+ (* i 2) 1)))
+    (cond
+      ((and (< l (heap-size (gethash heap-id *heaps*)))
+            (< (first (aref (heap-actual-heap (gethash heap-id *heaps*)) l))
+               (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))))
+       (cond ((and
+               (< r (heap-size (gethash heap-id *heaps*)))
+               (<
+                (first (aref (heap-actual-heap (gethash heap-id *heaps*)) r))
+                (first (aref (heap-actual-heap (gethash heap-id *heaps*)) l))))
+              (aswitch (heap-actual-heap (gethash heap-id *heaps*)) i r)
+              (heapify heap-id r))
+             (T (aswitch (heap-actual-heap (gethash heap-id *heaps*)) i l)
+                (heapify heap-id l))))
+      ((and (< r (heap-size (gethash heap-id *heaps*)))
+            (< (first (aref (heap-actual-heap (gethash heap-id *heaps*)) r))
+               (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))))
+       (aswitch (heap-actual-heap (gethash heap-id *heaps*)) i r)
+       (heapify heap-id r)))))
 
 
 
