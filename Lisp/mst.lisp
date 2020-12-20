@@ -303,7 +303,22 @@
 ;;;         heap-switch A[i] with A[minimum]
 ;;;     min-heapify(A, minimum)
 ;;;
-(defun heapify )
+
+
+
+;;; Write the given heap in the standard output with the following notation:
+;;; heap-id \n
+;;; heap-size \n
+;;; heap-actual-heap \n\n
+;;; heap-id's entry in *heaps*
+(defun heap-print (heap-id)
+  (format t "HEAP-ID:~t~a~%" heap-id)
+  (format t "HEAP-SIZE:~t~a~%" (third (gethash heap-id *heaps*)))
+  (format t "HEAP-ACTUAL-HEAP:~%~t~a~%~%" (fourth (gethash heap-id *heaps*)))
+  (format t "*heaps* entry for ~a:~%~a =~{~t~a~}"
+          heap-id
+          heap-id
+          (gethash heap-id *heaps*)))
 
 
 
