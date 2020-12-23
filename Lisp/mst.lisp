@@ -396,9 +396,10 @@
                               (setf (gethash (list 'PREVIOUS graph-id (fourth arc)) *previous*)
                                     (list 'VERTEX graph-id (second minimum)))
                               (setf (gethash (list 'VERTEX-KEY graph-id (fourth arc)) *vertex-keys*)
-                                    (list 'VERTEX-KEY graph-id (fourth arc) (first minimum))))
+                                    (list 'VERTEX-KEY graph-id (fourth arc) (fifth arc))))
                              (T nil)))
-                   (graph-vertex-neighbors graph-id (second minimum)))))
+                   (graph-vertex-neighbors graph-id (second minimum))))
+         (mst-prim-recurse graph-id))
         (T nil)))
 
 
