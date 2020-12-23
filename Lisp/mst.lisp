@@ -1,6 +1,7 @@
 (defparameter *vertices* (make-hash-table :test #'equal))
 (defparameter *arcs* (make-hash-table :test #'equal))
 (defparameter *graphs* (make-hash-table :test #'equal))
+
 (defparameter *visited* (make-hash-table :test #'equal))
 (defparameter *vertex-keys* (make-hash-table :test #'equal))
 (defparameter *previous* (make-hash-table :test #'equal))
@@ -8,7 +9,7 @@
 (defparameter *heaps* (make-hash-table :test #'equal))
 (defparameter default-heap-size 42)
 
-(defconstant inf most-positive-fixnum)
+(defconstant inf most-positive-double-float)
 
 (defun is-graph (g)
   (gethash g *graphs*))
@@ -88,7 +89,7 @@
                       (cond ((equal (third arc) v)
                              arc)
                             ((equal (fourth arc) v)
-                             arc)
+                             (list 'ARC g v (third arc)))
                             (T nil)))
                   (graph-arcs g))))
 
@@ -130,7 +131,6 @@
   (reverse (cdr (reverse l))))
 
 
-
 ;;; Write the given graph in the standard output with the following notation:
 ;;; graph-id \n
 ;;; graph-vertices \n
@@ -143,6 +143,7 @@
 
 
 ;;;; MINHEAP IMPLEMENTATION
+
 
 
 ;;; Create a new heap in the hashtable *heaps*.
@@ -259,8 +260,9 @@
         (T T)))
 
 
-
-(defun aswitch (arr i j)
+;;; Switch the the entry in position i in an array arr With the one on position
+;;; j and vice versa.
+(Defun aswitch (arr i j)
   (let ((vi (aref arr i))
         (vj (aref arr j)))
     (setf (aref arr i) vj)
@@ -343,22 +345,27 @@
   (format t "HEAP-ID:~t~a~%" heap-id)
   (format t "HEAP-SIZE:~t~a~%" (third (gethash heap-id *heaps*)))
   (format t "HEAP-ACTUAL-HEAP:~%~t~a~%~%" (fourth (gethash heap-id *heaps*)))
-  (format t "*heaps* entry for ~a:~%~a =~{~t~a~}"
+  (format t
+          "*heaps* entry for ~a:~%~a =~{~t~a~}"
           heap-id
           heap-id
           (gethash heap-id *heaps*)))
 
 
+(defun mst-prim (graph-id source-id)
+  (mapcar #'(lambda (v)
+              (cond ((equal (second v) graph-id)
+                     (cond ())
+                     (setf (gethash (list 'VERTEX-KEY graph-id (third v))
+                                    *vertex-keys*)
+                           (list 'VERTEX-KEY graph-id (third v) inf)))
+                    (heap-insert graph-id
+                                 (list 'VERTEX-KEY graph-id (third v))
+                                 (list 'VERTEX-KEY graph-id (third v) inf)))))
 
-(defun heap-reset (heap-id)
-  (clrhash *heaps*)
-  (new-heap heap-id 20)
-  (heap-insert heap-id 1 'uno)
-  (heap-insert heap-id 8 'otto)
-  (heap-insert heap-id 3 'tre)
-  (heap-insert heap-id 2 'due)
-  (heap-insert heap-id 10 'dieci)
-  (heap-insert heap-id 5 'cinque))
+
+
+
 
 
 
@@ -399,4 +406,14 @@
 (heap-insert 'hip 2 'due)
 (heap-insert 'hip 10 'dieci)
 (heap-insert 'hip 5 'cinque)
+
+(defun heap-reset (heap-id)
+  (clrhash *heaps*)
+  (new-heap heap-id 20)
+  (heap-insert heap-id 1 'uno)
+  (heap-insert heap-id 8 'otto)
+  (heap-insert heap-id 3 'tre)
+  (heap-insert heap-id 2 'due)
+  (heap-insert heap-id 10 'dieci)
+  (heap-insert heap-id 5 'cinque))
 ;;;; DEBUG ONLY REMOVE BEFORE RELEASE
