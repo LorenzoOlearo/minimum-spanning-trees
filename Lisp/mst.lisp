@@ -39,7 +39,8 @@
                  *vertices*)
         (list 'vertex g v)))
 
-
+(defun has-vertex (g v)
+  (equal (second (gethash (list 'VERTEX g v) *vertices*)) g))
 
 ;;; Return a list containing all the vertices in a given graph.
 (defun graph-vertices (g)
@@ -159,7 +160,7 @@
 ;;; Access function for a heap-rep.
 (defun heap-id (heap-rep)
   (cond ((equal (first heap-rep) 'heap)
-         (second heap-id))
+         (second heap-rep))
         (T nil)))
 
 
@@ -352,16 +353,51 @@
           (gethash heap-id *heaps*)))
 
 
+
 (defun mst-prim (graph-id source-id)
-  (mapcar #'(lambda (v)
-              (cond ((equal (second v) graph-id)
-                     (cond ())
-                     (setf (gethash (list 'VERTEX-KEY graph-id (third v))
-                                    *vertex-keys*)
-                           (list 'VERTEX-KEY graph-id (third v) inf)))
-                    (heap-insert graph-id
-                                 (list 'VERTEX-KEY graph-id (third v))
-                                 (list 'VERTEX-KEY graph-id (third v) inf)))))
+  (cond ((has-vertex graph-id source-id)
+         (new-heap graph-id (length (graph-vertices graph-id)))
+         (mapcar #'(lambda (v)
+                     (cond ((equal (second v) graph-id)
+                            (cond ((equal (third v) source-id)
+                                   (setf (gethash (list 'VERTEX-KEY graph-id (third v))
+                                                  *vertex-keys*)
+                                         (list 'VERTEX-KEY graph-id (third v) 0))
+                                   (heap-insert graph-id 0 (third v)))
+                                  (T (setf (gethash (list 'VERTEX-KEY graph-id (third v))
+                                                    *vertex-keys*)
+                                           (list 'VERTEX-KEY graph-id (third v) inf))
+                                     (heap-insert graph-id inf (third v)))))
+			   (T nil))
+                     (graph-vertices graph-id))
+		 (mst-prim-recurse graph-id)))
+	(T (error "graph mismatch"))))
+
+
+(defun mst-prim-recurse (graph-id)
+  (cond ((heap-not-empty graph-id)
+	 (let ((minimum (heap-extract graph-id)))
+	   (mapcar #'(lambda (arc)
+                       (cond ((and (integerp (heap-first-index graph-id (fourth arc) 0))
+				   (< (fifth arc) (gethash 'VERTEX-KEY graph-id (fourth arc))))
+			      (setf (gethash (list 'PREVIOUS graph-id (fourth arc)) *previous*)
+				    (list 'VERTEX graph-id (second minimum)))
+			      (setf (gethash (list 'VERTEX-KEY graph-id (fourth arc)) *vertex-keys*)
+				    (list 'VERTEX-KEY graph-id (fourth arc) (first minimum))))
+			     (T nil)))
+		   (graph-vertex-neighbors graph-id (second minimum)))))
+	(T nil)))
+
+(defun heap-first-index (heap-id value i)
+  (cond ((>= (length (heap-actual-heap (gethash heap-id *heaps*)))
+             i)
+         nil)
+        ((equal (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
+                value)
+         i)
+        (T (heap-first-index heap-id value (+ i 1)))))
+
+
 
 
 
@@ -395,7 +431,7 @@
 (new-arc 'greg 'e 'f 10)
 (new-arc 'greg 'd 'f 14)
 (new-arc 'greg 'd 'c 7)
-(new-arc 'greg 'e 'd )
+(new-arc 'greg 'e 'd 9)
 
 
 (new-heap 'hip 20)
