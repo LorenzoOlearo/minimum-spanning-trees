@@ -90,7 +90,7 @@
                       (cond ((equal (third arc) v)
                              arc)
                             ((equal (fourth arc) v)
-                             (list 'ARC g v (third arc)))
+                             (list 'ARC g v (third arc) (fifth arc)))
                             (T nil)))
                   (graph-arcs g))))
 
@@ -246,7 +246,7 @@
 ;;;         i = Parent(i)
 ;;;
 (defun heap-decrease-key (heap i k)
-  (cond ((> (first (aref heap i)) k)
+  (cond ((>= (first (aref heap i)) k)
          (setf (aref heap i) (list k (second (aref heap i))))
          (heap-decrease-key-shift-up heap i))
         (T (error "new key is greater"))))
@@ -355,6 +355,7 @@
 
 
 (defun mst-prim (graph-id source-id)
+  (heap-reset graph-id)
   (cond ((has-vertex graph-id source-id)
          (new-heap graph-id (length (graph-vertices graph-id)))
          (mapcar #'(lambda (v)
@@ -368,40 +369,48 @@
                                                     *vertex-keys*)
                                            (list 'VERTEX-KEY graph-id (third v) inf))
                                      (heap-insert graph-id inf (third v)))))
-			   (T nil))
-                     (graph-vertices graph-id))
-		 (mst-prim-recurse graph-id)))
-	(T (error "graph mismatch"))))
+                           (T nil)))
+                 (graph-vertices graph-id))
+         (mst-prim-recurse graph-id))
+        (T (error "graph mismatch"))))
+
 
 
 (defun mst-prim-recurse (graph-id)
   (cond ((heap-not-empty graph-id)
-	 (let ((minimum (heap-extract graph-id)))
-	   (mapcar #'(lambda (arc)
+         (let ((minimum (heap-extract graph-id)))
+           (mapcar #'(lambda (arc)
                        (cond ((and (integerp (heap-first-index graph-id (fourth arc) 0))
-				   (< (fifth arc) (gethash 'VERTEX-KEY graph-id (fourth arc))))
-			      (setf (gethash (list 'PREVIOUS graph-id (fourth arc)) *previous*)
-				    (list 'VERTEX graph-id (second minimum)))
-			      (setf (gethash (list 'VERTEX-KEY graph-id (fourth arc)) *vertex-keys*)
-				    (list 'VERTEX-KEY graph-id (fourth arc) (first minimum))))
-			     (T nil)))
-		   (graph-vertex-neighbors graph-id (second minimum)))))
-	(T nil)))
+                                   (< (fifth arc)
+                                      (fourth (gethash (list 'VERTEX-KEY
+                                                             graph-id
+                                                             (fourth arc))
+                                                       *vertex-keys*))))
+                              (heap-decrease-key (heap-actual-heap (gethash
+                                                                    graph-id
+                                                                    *heaps*))
+                                                 (heap-first-index graph-id
+                                                                   (fourth arc)
+                                                                   0)
+                                                 (fifth arc))
+                              (setf (gethash (list 'PREVIOUS graph-id (fourth arc)) *previous*)
+                                    (list 'VERTEX graph-id (second minimum)))
+                              (setf (gethash (list 'VERTEX-KEY graph-id (fourth arc)) *vertex-keys*)
+                                    (list 'VERTEX-KEY graph-id (fourth arc) (first minimum))))
+                             (T nil)))
+                   (graph-vertex-neighbors graph-id (second minimum)))))
+        (T nil)))
+
+
 
 (defun heap-first-index (heap-id value i)
-  (cond ((>= (length (heap-actual-heap (gethash heap-id *heaps*)))
+  (cond ((<= (length (heap-actual-heap (gethash heap-id *heaps*)))
              i)
          nil)
-        ((equal (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
+        ((equal (second (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
                 value)
          i)
         (T (heap-first-index heap-id value (+ i 1)))))
-
-
-
-
-
-
 
 
 
@@ -444,12 +453,5 @@
 (heap-insert 'hip 5 'cinque)
 
 (defun heap-reset (heap-id)
-  (clrhash *heaps*)
-  (new-heap heap-id 20)
-  (heap-insert heap-id 1 'uno)
-  (heap-insert heap-id 8 'otto)
-  (heap-insert heap-id 3 'tre)
-  (heap-insert heap-id 2 'due)
-  (heap-insert heap-id 10 'dieci)
-  (heap-insert heap-id 5 'cinque))
+  (clrhash *heaps*))
 ;;;; DEBUG ONLY REMOVE BEFORE RELEASE
