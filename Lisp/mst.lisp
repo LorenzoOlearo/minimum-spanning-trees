@@ -73,13 +73,19 @@
 ;;; Note that the parameter rapresenting the arc's weight is optional and its
 ;;; default value is set to 1.
 (defun new-arc (graph-id v u &optional (weight 1))
-  (cond ((gethash (list 'arc graph-id v u) *arcs*)
-         (remhash (list 'arc graph-id v u) *arcs*))
-        ((and (has-vertex graph-id u)
+  (cond ((and (has-vertex graph-id u)
               (has-vertex graph-id v))
-         (setf (gethash (list 'arc graph-id v u) *arcs*)
-               (list 'arc graph-id v u weight)))
-        (T nil)))
+         (cond ((gethash (list 'arc graph-id v u) *arcs*)
+                (remhash (list 'arc graph-id v u) *arcs*)
+                (setf (gethash (list 'arc graph-id v u) *arcs*)
+                      (list 'arc graph-id v u weight)))
+               ((gethash (list 'arc graph-id u v) *arcs*)
+                (remhash (list 'arc graph-id u v) *arcs*)
+                (setf (gethash (list 'arc graph-id v u) *arcs*)
+                      (list 'arc graph-id v u weight)))
+               (T (setf (gethash (list 'arc graph-id v u) *arcs*)
+                        (list 'arc graph-id v u weight)))))
+        (T (error "UNKNOWN VERTICES"))))
 
 
 
