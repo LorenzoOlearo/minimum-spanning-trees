@@ -261,6 +261,7 @@
         (T T)))
 
 
+
 ;;; Switch the the entry in position i in an array arr With the one on position
 ;;; j and vice versa.
 (Defun aswitch (arr i j)
@@ -361,18 +362,28 @@
          (mapcar #'(lambda (v)
                      (cond ((equal (second v) graph-id)
                             (cond ((equal (third v) source-id)
-                                   (setf (gethash (list 'VERTEX-KEY graph-id (third v))
+                                   (setf (gethash (list 'VERTEX-KEY
+                                                        graph-id
+                                                        (third v))
                                                   *vertex-keys*)
-                                         (list 'VERTEX-KEY graph-id (third v) 0))
+                                         (list 'VERTEX-KEY
+                                               graph-id
+                                               (third v)
+                                               0))
                                    (heap-insert graph-id 0 (third v)))
-                                  (T (setf (gethash (list 'VERTEX-KEY graph-id (third v))
+                                  (T (setf (gethash (list 'VERTEX-KEY
+                                                          graph-id
+                                                          (third v))
                                                     *vertex-keys*)
-                                           (list 'VERTEX-KEY graph-id (third v) inf))
+                                           (list 'VERTEX-KEY
+                                                 graph-id
+                                                 (third v)
+                                                 inf))
                                      (heap-insert graph-id inf (third v)))))
                            (T nil)))
                  (graph-vertices graph-id))
          (mst-prim-recurse graph-id))
-        (T (error "graph mismatch"))))
+        (T (error "GRAPH MISMATCH"))))
 
 
 
@@ -380,7 +391,9 @@
   (cond ((heap-not-empty graph-id)
          (let ((minimum (heap-extract graph-id)))
            (mapcar #'(lambda (arc)
-                       (cond ((and (integerp (heap-first-index graph-id (fourth arc) 0))
+                       (cond ((and (integerp (heap-first-index graph-id
+                                                               (fourth arc)
+                                                               0))
                                    (< (fifth arc)
                                       (fourth (gethash (list 'VERTEX-KEY
                                                              graph-id
@@ -393,10 +406,21 @@
                                                                    (fourth arc)
                                                                    0)
                                                  (fifth arc))
-                              (setf (gethash (list 'PREVIOUS graph-id (fourth arc)) *previous*)
-                                    (list 'VERTEX graph-id (second minimum)))
-                              (setf (gethash (list 'VERTEX-KEY graph-id (fourth arc)) *vertex-keys*)
-                                    (list 'VERTEX-KEY graph-id (fourth arc) (fifth arc))))
+                              (setf (gethash (list 'PREVIOUS
+                                                   graph-id
+                                                   (fourth arc))
+                                             *previous*)
+                                    (list 'VERTEX
+                                          graph-id
+                                          (second minimum)))
+                              (setf (gethash (list 'VERTEX-KEY
+                                                   graph-id
+                                                   (fourth arc))
+                                             *vertex-keys*)
+                                    (list 'VERTEX-KEY
+                                          graph-id
+                                          (fourth arc)
+                                          (fifth arc))))
                              (T nil)))
                    (graph-vertex-neighbors graph-id (second minimum))))
          (mst-prim-recurse graph-id))
@@ -412,6 +436,9 @@
                 value)
          i)
         (T (heap-first-index heap-id value (+ i 1)))))
+
+
+(defun mst-get (graph-id source-id))
 
 
 
@@ -463,16 +490,13 @@
   (new-arc graph-id 'e 'd 9))
 
 
-(new-heap 'hip 20)
 
-(heap-insert 'hip 1 'uno)
-(heap-insert 'hip 8 'otto)
-(heap-insert 'hip 3 'tre)
-(heap-insert 'hip 2 'due)
-(heap-insert 'hip 10 'dieci)
-(heap-insert 'hip 5 'cinque)
-
-(defun heap-reset (heap-id)
-  ()
-  (clrhash *heaps*))
+(defun load-demo-heap (heap-id)
+  (new-heap heap-id 20)
+  (heap-insert heap-id 1 'uno)
+  (heap-insert heap-id 8 'otto)
+  (heap-insert heap-id 3 'tre)
+  (heap-insert heap-id 2 'due)
+  (heap-insert heap-id 10 'dieci)
+  (heap-insert heap-id 5 'cinque))
 ;;;; DEBUG ONLY REMOVE BEFORE RELEASE
