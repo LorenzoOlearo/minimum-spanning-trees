@@ -75,16 +75,9 @@
 (defun new-arc (graph-id v u &optional (weight 1))
   (cond ((and (has-vertex graph-id u)
               (has-vertex graph-id v))
-         (cond ((gethash (list 'arc graph-id v u) *arcs*)
-                (remhash (list 'arc graph-id v u) *arcs*)
-                (setf (gethash (list 'arc graph-id v u) *arcs*)
-                      (list 'arc graph-id v u weight)))
-               ((gethash (list 'arc graph-id u v) *arcs*)
-                (remhash (list 'arc graph-id u v) *arcs*)
-                (setf (gethash (list 'arc graph-id v u) *arcs*)
-                      (list 'arc graph-id v u weight)))
-               (T (setf (gethash (list 'arc graph-id v u) *arcs*)
-                        (list 'arc graph-id v u weight)))))
+         (remhash (list 'arc graph-id u v) *arcs*)
+         (setf (gethash (list 'arc graph-id v u) *arcs*)
+               (list 'arc graph-id v u weight)))
         (T (error "UNKNOWN VERTICES"))))
 
 
@@ -539,3 +532,27 @@
                (cond ((equal (second v) heap-id)
                       (remhash k *previous*))))
            *previous*))
+
+
+
+;;; Creates a graph reading arcs from a file or adds the arcs to the graph
+;;; if already exixsting
+(defun read-graph (graph-id file-name)
+  (new-graph graph-id)
+  (with-open-file (in file-name :direction :input :if-does-not-exist :error)
+                  (new-arcs-from graph-id in)))
+
+
+
+;;; Adds arcs to a pre-existing graph reading from a stream
+(defun new-arcs-from (graph-id input-stream)
+  (let ((v (read input-stream nil nil))
+        (u (read input-stream nil nil))
+        (w (read input-stream nil nil)))
+    (unless (or (eq v nil)
+                (eq u nil)
+                (eq w nil))
+      (new-vertex graph-id v)
+      (new-vertex graph-id u)
+      (new-arc graph-id v u w)
+      (new-arcs-from graph-id  input-stream))))
