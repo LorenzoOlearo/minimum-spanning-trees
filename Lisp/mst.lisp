@@ -1,3 +1,5 @@
+(load "demo.lisp" :if-does-not-exist nil)
+
 (defparameter *vertices* (make-hash-table :test #'equal))
 (defparameter *arcs* (make-hash-table :test #'equal))
 (defparameter *graphs* (make-hash-table :test #'equal))
@@ -11,43 +13,54 @@
 
 (defconstant inf most-positive-double-float)
 
-(defun is-graph (g)
-  (gethash g *graphs*))
+
+
+;;;; GRAPHS IMPLEMENTATION
+
+
+(defun is-graph (graph-id)
+  (gethash graph-id *graphs*))
 
 
 
 ;;; Create a new graph in the hashtable.
-(defun new-graph (g)
-  (or (gethash g *graphs*)
-      (setf (gethash g *graphs*) g)))
+(defun new-graph (graph-id)
+  (or (gethash graph-id *graphs*)
+      (setf (gethash graph-id *graphs*) graph-id)))
+
 
 
 ;;; Delete the entire graph with all its arcs and vertices from the hash table.
-(defun delete-graph (g)
+(defun delete-graph (graph-id)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) g) (remhash k *vertices*))))
+               (cond ((equal (second v) graph-id) (remhash k *vertices*))))
            *vertices*)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) g) (remhash k *arcs*))))
+               (cond ((equal (second v) graph-id) (remhash k *arcs*))))
            *arcs*))
 
 
 
 ;;; Create a new vertex in the given graph.
-(defun new-vertex (g v)
-  (setf (gethash (list 'vertex g v)
+(defun new-vertex (graph-id vertex-id)
+  (setf (gethash (list 'vertex graph-id vertex-id)
                  *vertices*)
-        (list 'vertex g v)))
+        (list 'vertex graph-id vertex-id)))
 
-(defun has-vertex (g v)
-  (equal (second (gethash (list 'VERTEX g v) *vertices*)) g))
+
+
+(defun has-vertex (graph-id vertex-id)
+  (equal (second (gethash (list 'VERTEX graph-id vertex-id) *vertices*))
+         graph-id))
+
+
 
 ;;; Return a list containing all the vertices in a given graph.
-(defun graph-vertices (g)
+(defun graph-vertices (graph-id)
   (let ((acc '()))
     (maphash #'(lambda (key val)
                  (declare (ignore key))
-                 (cond ((equal (second val) g)
+                 (cond ((equal (second val) graph-id)
                         (push val acc))))
              *vertices*)
     acc))
@@ -56,23 +69,26 @@
 
 ;;; Create an entry in the hash table rapresenting a new arc between two
 ;;; vertices using the following notation:
-;;; (arc g v-destination v-source weight)
+;;; (arc g v-source v-dest weight)
 ;;; Note that the parameter rapresenting the arc's weight is optional and its
 ;;; default value is set to 1.
-(defun new-arc (g u v &optional (w 1))
-  (cond ((gethash (list 'arc g v u) *arcs*)
-         (remhash (list 'arc g v u) *arcs*)))
-  (setf (gethash (list 'arc g u v) *arcs*)
-        (list 'arc g u v w)))
+(defun new-arc (graph-id v u &optional (weight 1))
+  (cond ((gethash (list 'arc graph-id v u) *arcs*)
+         (remhash (list 'arc graph-id v u) *arcs*))
+        ((and (has-vertex graph-id u)
+              (has-vertex graph-id v))
+         (setf (gethash (list 'arc graph-id v u) *arcs*)
+               (list 'arc graph-id v u weight)))
+        (T nil)))
 
 
 
 ;;; Return a list containing all the arcs between two vertices in a given graph.
-(defun graph-arcs (g)
-  (let ((acc '()))
+(defun graph-arcs (graph-id)
+  (let ((acc ()))
     (maphash #'(lambda (key val)
                  (declare (ignore key))
-                 (cond ((equal (second val) g)
+                 (cond ((equal (second val) graph-id)
                         (push val acc))))
              *arcs*)
     acc))
@@ -84,29 +100,33 @@
 ;;; The arcs elements of the list are rapresented with the following form:
 ;;; (arc graph-id vertex-id vertex-neighbor weight)
 ;;; Note that the implementation assumes a non oriented graph.
-(defun graph-vertex-neighbors (g v)
+(defun graph-vertex-neighbors (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (arc)
-                      (cond ((equal (third arc) v)
+                      (cond ((equal (third arc) vertex-id)
                              arc)
-                            ((equal (fourth arc) v)
-                             (list 'ARC g v (third arc) (fifth arc)))
+                            ((equal (fourth arc) vertex-id)
+                             (list 'ARC
+                                   graph-id
+                                   vertex-id
+                                   (third arc)
+                                   (fifth arc)))
                             (T nil)))
-                  (graph-arcs g))))
+                  (graph-arcs graph-id))))
 
 
 
 ;; PLACEHOLDER while waiting for updated specifics.
 ;; How at least one of the two neighbors function should look like.
-(defun fixed-graph-vertices (g v)
+(defun fixed-graph-vertices (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (arc)
-                      (cond ((equal (third arc) v)
-                             (list 'vertex g (fourth arc)))
-                            ((equal (fourth arc) v)
-                             (list 'vertex g (third arc)))
+                      (cond ((equal (third arc) vertex-id)
+                             (list 'vertex graph-id (fourth arc)))
+                            ((equal (fourth arc) vertex-id)
+                             (list 'vertex graph-id (third arc)))
                             (T nil)))
-                  (graph-arcs g))))
+                  (graph-arcs graph-id))))
 
 
 
@@ -114,15 +134,15 @@
 ;;; connections are rapresented by arcs in the form:
 ;;; (arc graph-id vertex-id vertex-neighbor)
 ;;; Note that the implementation assumes a non oriented graph.
-(defun graph-vertex-adjacent (g v)
+(defun graph-vertex-adjacent (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (arc)
-                      (cond ((equal (third arc) v)
+                      (cond ((equal (third arc) vertex-id)
                              (remove-last arc))
-                            ((equal (fourth arc) v)
+                            ((equal (fourth arc) vertex-id)
                              (remove-last  arc))
                             (T nil)))
-                  (graph-arcs g))))
+                  (graph-arcs graph-id))))
 
 
 
@@ -132,19 +152,19 @@
   (reverse (cdr (reverse l))))
 
 
+
 ;;; Write the given graph in the standard output with the following notation:
 ;;; graph-id \n
 ;;; graph-vertices \n
 ;;; graph-arcs
-(defun graph-print (g)
-  (format t "~a~%~%" g)
-  (format t "~{~a~%~}~%" (graph-vertices g))
-  (format t "~{~a~%~}" (graph-arcs g)))
+(defun graph-print (graph-id)
+  (format t "~a~%~%" graph-id)
+  (format t "~{~a~%~}~%" (graph-vertices graph-id))
+  (format t "~{~a~%~}" (graph-arcs graph-id)))
 
 
 
 ;;;; MINHEAP IMPLEMENTATION
-
 
 
 ;;; Create a new heap in the hashtable *heaps*.
@@ -214,24 +234,24 @@
 ;;;     A[A.heap-size] = -inf
 ;;;     Heap-Decrease-Key(A, A.heap-size, key)
 ;;;
-(defun heap-insert (id k v)
-  (cond ((and (< (heap-size (gethash id *heaps*))
-                 (length (heap-actual-heap (gethash id *heaps*))))
-              (equal (aref (heap-actual-heap (gethash id *heaps*))
-                           (heap-size (gethash id *heaps*)))
+(defun heap-insert (heap-id k v)
+  (cond ((and (< (heap-size (gethash heap-id *heaps*))
+                 (length (heap-actual-heap (gethash heap-id *heaps*))))
+              (equal (aref (heap-actual-heap (gethash heap-id *heaps*))
+                           (heap-size (gethash heap-id *heaps*)))
                      nil))
-         (setf (aref (heap-actual-heap (gethash id *heaps*))
-                     (heap-size (gethash id *heaps*)))
+         (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
+                     (heap-size (gethash heap-id *heaps*)))
                (list inf v))
-         (setf (gethash id *heaps*)
+         (setf (gethash heap-id *heaps*)
                (list 'heap
-                     id
-                     (+ 1 (heap-size (gethash id *heaps*)))
-                     (heap-actual-heap (gethash id *heaps*))))
-         (heap-decrease-key (heap-actual-heap (gethash id *heaps*))
-                            (- (heap-size (gethash id *heaps*)) 1)
+                     heap-id
+                     (+ 1 (heap-size (gethash heap-id *heaps*)))
+                     (heap-actual-heap (gethash heap-id *heaps*))))
+         (heap-decrease-key (heap-actual-heap (gethash heap-id *heaps*))
+                            (- (heap-size (gethash heap-id *heaps*)) 1)
                             k))
-        (T (error "heap is full"))))
+        (T (error "HEAP FULL ERROR"))))
 
 
 
@@ -245,26 +265,27 @@
 ;;;         switch A[i] with A[Parent(i)]
 ;;;         i = Parent(i)
 ;;;
-(defun heap-decrease-key (heap i k)
-  (cond ((>= (first (aref heap i)) k)
-         (setf (aref heap i) (list k (second (aref heap i))))
-         (heap-decrease-key-shift-up heap i))
-        (T (error "new key is greater"))))
+(defun heap-decrease-key (actual-heap i k)
+  (cond ((>= (first (aref actual-heap i)) k)
+         (setf (aref actual-heap i) (list k (second (aref actual-heap i))))
+         (heap-decrease-key-shift-up actual-heap i))
+        (T (error "THE NEW KEY IS GREATER"))))
 
 
 
-(defun heap-decrease-key-shift-up (heap i)
+(defun heap-decrease-key-shift-up (actual-heap i)
   (cond ((and (> i 0)
-              (> (first (aref heap (floor i 2))) (first (aref heap i))))
-         (aswitch heap (floor i 2) i)
-         (heap-decrease-key-shift-up heap (floor i 2)))
+              (> (first (aref actual-heap (floor i 2)))
+                 (first (aref actual-heap i))))
+         (aswitch actual-heap (floor i 2) i)
+         (heap-decrease-key-shift-up actual-heap (floor i 2)))
         (T T)))
 
 
 
 ;;; Switch the the entry in position i in an array arr With the one on position
 ;;; j and vice versa.
-(Defun aswitch (arr i j)
+(defun aswitch (arr i j)
   (let ((vi (aref arr i))
         (vj (aref arr j)))
     (setf (aref arr i) vj)
@@ -355,8 +376,31 @@
 
 
 
+;;;; MST IMPLEMENTATION
+
+
+;;; Return the weight of the arc connecting vertex-id to the MST.
+(defun mst-vertex-key (graph-id vertex-id)
+  (let ((record (gethash (list 'VERTEX-KEY graph-id vertex-id) *vertex-keys*)))
+    (cond (record
+           (fourth record))
+          (T inf))))
+
+
+
+;;; Return the vertex-id's "parent" vertex in the MST algorithm.
+(defun mst-previous (graph-id vertex-id)
+  (let ((record (gethash (list 'PREVIOUS graph-id vertex-id) *previous*)))
+    (cond (record
+           (third record))
+          (T nil))))
+
+
+
+;;; Executes the Prim's algorithm by adding in the hash tables *vertex-keys* and
+;;; *previous* the respective elements.
 (defun mst-prim (graph-id source-id)
-  (heap-reset graph-id)
+  (prim-reset graph-id)
   (cond ((has-vertex graph-id source-id)
          (new-heap graph-id (length (graph-vertices graph-id)))
          (mapcar #'(lambda (v)
@@ -387,6 +431,8 @@
 
 
 
+;;; Support function for mst-prim.
+;;; Executes the recursively the iterating part of the algorithm.
 (defun mst-prim-recurse (graph-id)
   (cond ((heap-not-empty graph-id)
          (let ((minimum (heap-extract graph-id)))
@@ -428,22 +474,32 @@
 
 
 
-(defun heap-first-index (heap-id value i)
+;;; Support function for mst-prim-recurse.
+;;; Extract the array from heap-id and starting from start-index finds the
+;;; lowest index where the element with the given value is present.
+(defun heap-first-index (heap-id value start-index)
   (cond ((<= (length (heap-actual-heap (gethash heap-id *heaps*)))
-             i)
+             start-index)
          nil)
-        ((equal (second (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
+        ((equal (second (aref (heap-actual-heap (gethash heap-id *heaps*))
+                              start-index))
                 value)
-         i)
-        (T (heap-first-index heap-id value (+ i 1)))))
+         start-index)
+        (T (heap-first-index heap-id value (+ start-index 1)))))
 
 
 
+;;; Return the MST graph following a preorder visit, arcs with equal weights are
+;;; lexicographically ordered.
 (defun mst-get (graph-id source-id)
   (mapcan #'(lambda (arc)
               (append (list arc) (mst-get graph-id (third arc))))
           (get-prim-arcs graph-id source-id)))
 
+
+
+;;; Create a list of arcs from the hash tables *vertex-keys* and *previous* that
+;;; the function mst-prim has populated.
 (defun get-prim-arcs (graph-id source-id)
   (let ((acc ()))
     (maphash #'(lambda (k v)
@@ -460,74 +516,20 @@
              *previous*)
     (stable-sort (stable-sort acc #'STRING< :KEY #'THIRD) #'< :KEY #'FOURTH)))
 
-(defun mst-vertex-key (graph-id vertex-id)
-  (let ((record (gethash (list 'VERTEX-KEY graph-id vertex-id) *vertex-keys*)))
-    (cond (record
-	   (fourth record))
-	  (T inf))))
-
-(defun mst-previous (graph-id vertex-id)
-  (let ((record (gethash (list 'PREVIOUS graph-id vertex-id) *previous*)))
-    (cond (record
-	   (third record))
-	  (T nil))))
 
 
 ;;; Clear all the hash tables related to the Prim's algorithm
-(defun heap-reset (heap-id)
+(defun prim-reset (heap-id)
   (maphash #'(lambda (k v)
                (declare (ignore k))
                (cond ((equal (second v) heap-id)
                       (remhash v *heaps*))))
            *heaps*)
   (maphash #'(lambda (k v)
-               (declare (ignore k))
                (cond ((equal (second v) heap-id)
-                      (remhash v *vertex-keys*))))
+                      (remhash k *vertex-keys*))))
            *vertex-keys*)
   (maphash #'(lambda (k v)
-               (declare (ignore k))
                (cond ((equal (second v) heap-id)
-                      (remhash v *previous*))))
+                      (remhash k *previous*))))
            *previous*))
-
-
-
-;;;; DEBUG ONLY REMOVE BEFORE RELEASE
-(defun load-demo-graph (graph-id)
-  (new-graph graph-id)
-  (new-vertex graph-id 'a)
-  (new-vertex graph-id 'b)
-  (new-vertex graph-id 'c)
-  (new-vertex graph-id 'd)
-  (new-vertex graph-id 'e)
-  (new-vertex graph-id 'f)
-  (new-vertex graph-id 'g)
-  (new-vertex graph-id 'h)
-  (new-vertex graph-id 'i)
-  (new-arc graph-id 'b 'a 4)
-  (new-arc graph-id 'h 'a 8)
-  (new-arc graph-id 'b 'h 11)
-  (new-arc graph-id 'i 'h 7)
-  (new-arc graph-id 'g 'h 1)
-  (new-arc graph-id 'c 'b 8)
-  (new-arc graph-id 'c 'i 2)
-  (new-arc graph-id 'g 'i 6)
-  (new-arc graph-id 'f 'g 2)
-  (new-arc graph-id 'f 'c 4)
-  (new-arc graph-id 'e 'f 10)
-  (new-arc graph-id 'd 'f 14)
-  (new-arc graph-id 'd 'c 7)
-  (new-arc graph-id 'e 'd 9))
-
-
-
-(defun load-demo-heap (heap-id)
-  (new-heap heap-id 20)
-  (heap-insert heap-id 1 'uno)
-  (heap-insert heap-id 8 'otto)
-  (heap-insert heap-id 3 'tre)
-  (heap-insert heap-id 2 'due)
-  (heap-insert heap-id 10 'dieci)
-  (heap-insert heap-id 5 'cinque))
-;;;; DEBUG ONLY REMOVE BEFORE RELEASE
