@@ -438,8 +438,39 @@
         (T (heap-first-index heap-id value (+ i 1)))))
 
 
-(defun mst-get (graph-id source-id))
 
+(defun mst-get (graph-id source-id)
+  (mapcan #'(lambda (arc)
+              (append (list arc) (mst-get graph-id (third arc))))
+          (get-prim-arcs graph-id source-id)))
+
+(defun get-prim-arcs (graph-id source-id)
+  (let ((acc ()))
+    (maphash #'(lambda (k v)
+                 (cond ((equal (third v) source-id)
+                        (push (list 'ARC
+                                    (third v)
+                                    (third k)
+                                    (fourth (gethash (list 'VERTEX-KEY
+                                                           graph-id
+                                                           (third k))
+                                                     *vertex-keys*)))
+                              acc))
+                       (T nil)))
+             *previous*)
+    (stable-sort (stable-sort acc #'STRING< :KEY #'THIRD) #'< :KEY #'FOURTH)))
+
+(defun mst-vertex-key (graph-id vertex-id)
+  (let ((record (gethash (list 'VERTEX-KEY graph-id vertex-id) *vertex-keys*)))
+    (cond (record
+	   (fourth record))
+	  (T inf))))
+
+(defun mst-previous (graph-id vertex-id)
+  (let ((record (gethash (list 'PREVIOUS graph-id vertex-id) *previous*)))
+    (cond (record
+	   (third record))
+	  (T nil))))
 
 
 ;;; Clear all the hash tables related to the Prim's algorithm
