@@ -513,8 +513,10 @@
                               acc))
                        (T nil)))
              *previous*)
-    (stable-sort (stable-sort acc #'STRING< :KEY #'THIRD) #'< :KEY #'FOURTH)))
-
+    (stable-sort (stable-sort acc
+                              #'STRING< :KEY #'(lambda (arc)
+                                                 (write-to-string (third arc))))
+                              #'< :KEY #'FOURTH)))
 
 
 ;;; Clear all the hash tables related to the Prim's algorithm
