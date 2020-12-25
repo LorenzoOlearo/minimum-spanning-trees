@@ -234,23 +234,21 @@
 ;;;     Heap-Decrease-Key(A, A.heap-size, key)
 ;;;
 (defun heap-insert (heap-id k v)
-  (cond ((and (< (heap-size (gethash heap-id *heaps*))
-                 (length (heap-actual-heap (gethash heap-id *heaps*))))
-              (equal (aref (heap-actual-heap (gethash heap-id *heaps*))
-                           (heap-size (gethash heap-id *heaps*)))
-                     nil))
-         (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
-                     (heap-size (gethash heap-id *heaps*)))
-               (list inf v))
-         (setf (gethash heap-id *heaps*)
-               (list 'heap
-                     heap-id
-                     (+ 1 (heap-size (gethash heap-id *heaps*)))
-                     (heap-actual-heap (gethash heap-id *heaps*))))
-         (heap-decrease-key (heap-actual-heap (gethash heap-id *heaps*))
-                            (- (heap-size (gethash heap-id *heaps*)) 1)
-                            k))
-        (T (error "HEAP FULL ERROR"))))
+  (let ((heap-rep (gethash heap-id *heaps*)))
+    (cond ((and (< (heap-size heap-rep)
+                   (length (heap-actual-heap heap-rep)))
+		(equal (aref (heap-actual-heap heap-rep)
+                             (heap-size heap-rep))
+                       nil))
+           (setf (aref (heap-actual-heap heap-rep)
+                       (heap-size heap-rep))
+		 (list inf v))
+           (setf (third (gethash heap-id *heaps*))
+		 (+ 1 (heap-size heap-rep)))
+	   (heap-decrease-key (heap-actual-heap heap-rep)
+			      (- (heap-size heap-rep) 1)
+			      k))
+          (T (error "HEAP FULL ERROR")))))
 
 
 
@@ -304,19 +302,20 @@
 ;;;     return min
 ;;;
 (defun heap-extract (heap-id)
-  (cond ((< (third (gethash heap-id *heaps*)) 1)
-         (error "HEAP UNDERFLOW ERROR"))
-        (T (setf (third (gethash heap-id *heaps*))
-                 (- (heap-size (gethash heap-id *heaps*)) 1))
-           (aswitch (fourth (gethash heap-id *heaps*))
-                    0
-                    (heap-size (gethash heap-id *heaps*)))
-           (heapify heap-id 0)
-           (car (cons (aref (fourth (gethash heap-id *heaps*))
-                            (heap-size (gethash heap-id *heaps*)))
-                      (setf (aref (fourth (gethash heap-id *heaps*))
-                                  (third (gethash heap-id *heaps*)))
-                            nil))))))
+  (let ((heap-rep (gethash heap-id *heaps*)))
+    (cond ((< (heap-size heap-rep) 1)
+           (error "HEAP UNDERFLOW ERROR"))
+          (T (setf (third (gethash heap-id *heaps*))
+                   (- (heap-size heap-rep) 1))
+	     (aswitch (heap-actual-heap heap-rep)
+                      0
+                      (heap-size heap-rep))
+             (heapify heap-id 0)
+             (car (cons (aref (heap-actual-heap heap-rep)
+                              (heap-size heap-rep))
+			(setf (aref (heap-actual-heap heap-rep)
+                                    (heap-size heap-rep))
+                              nil)))))))
 
 
 
@@ -336,25 +335,26 @@
 ;;;
 (defun heapify (heap-id i)
   (let ((l (* i 2))
-        (r (+ (* i 2) 1)))
+        (r (+ (* i 2) 1))
+	(heap-rep (gethash heap-id *heaps*)))
     (cond
-      ((and (< l (heap-size (gethash heap-id *heaps*)))
-            (< (first (aref (heap-actual-heap (gethash heap-id *heaps*)) l))
-               (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))))
-       (cond ((and
-               (< r (heap-size (gethash heap-id *heaps*)))
-               (<
-                (first (aref (heap-actual-heap (gethash heap-id *heaps*)) r))
-                (first (aref (heap-actual-heap (gethash heap-id *heaps*)) l))))
-              (aswitch (heap-actual-heap (gethash heap-id *heaps*)) i r)
-              (heapify heap-id r))
-             (T (aswitch (heap-actual-heap (gethash heap-id *heaps*)) i l)
-                (heapify heap-id l))))
-      ((and (< r (heap-size (gethash heap-id *heaps*)))
-            (< (first (aref (heap-actual-heap (gethash heap-id *heaps*)) r))
-               (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))))
-       (aswitch (heap-actual-heap (gethash heap-id *heaps*)) i r)
-       (heapify heap-id r)))))
+     ((and (< l (heap-size heap-rep))
+           (< (first (aref (heap-actual-heap heap-rep) l))
+              (first (aref (heap-actual-heap heap-rep) i))))
+      (cond ((and
+              (< r (heap-size heap-rep))
+              (<
+               (first (aref (heap-actual-heap heap-rep) r))
+               (first (aref (heap-actual-heap heap-rep) l))))
+             (aswitch (heap-actual-heap heap-rep) i r)
+             (heapify heap-id r))
+            (T (aswitch (heap-actual-heap heap-rep) i l)
+               (heapify heap-id l))))
+     ((and (< r (heap-size heap-rep))
+           (< (first (aref (heap-actual-heap heap-rep) r))
+              (first (aref (heap-actual-heap heap-rep) i))))
+      (aswitch (heap-actual-heap heap-rep) i r)
+      (heapify heap-id r)))))
 
 
 
