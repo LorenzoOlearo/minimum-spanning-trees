@@ -116,19 +116,19 @@
 (defun graph-vertex-neighbors (graph-id vertex-id)
   (remove nil
 	  (mapcar #'(lambda (u)
-		      (or (gethash (list 'ARC graph-id vertex-id u) *arcs*)
-			  (cond ((gethash (list 'ARC graph-id u vertex-id) *arcs*)
+		      (or (gethash (list 'ARC graph-id vertex-id (third u)) *arcs*)
+			  (cond ((gethash (list 'ARC graph-id (third u) vertex-id) *arcs*)
 				 (list 'ARC
 				       graph-id
 				       vertex-id
-				       u
+				       (third u)
 				       (fifth (gethash (list 'ARC
 							     graph-id
-							     u
+							     (third u)
 							     vertex-id)
 						       *arcs*)))))))
 		  (graph-vertices graph-id))))
-		      
+
 
 ;; PLACEHOLDER while waiting for updated specifics.
 ;; How at least one of the two neighbors function should look like.
@@ -452,6 +452,10 @@
          (let ((minimum (heap-extract graph-id)))
            (mapcar #'(lambda (arc)
                        (cond ((and (integerp (heap-first-index graph-id
+							       (fourth (gethash (list 'VERTEX-KEY
+										      graph-id
+										      (fourth arc))
+										*vertex-keys*))
                                                                (fourth arc)
                                                                0))
                                    (< (fifth arc)
@@ -463,6 +467,10 @@
                                                                     graph-id
                                                                     *heaps*))
                                                  (heap-first-index graph-id
+								   (fourth (gethash (list 'VERTEX-KEY
+											  graph-id
+											  (fourth arc))
+										    *vertex-keys*))
                                                                    (fourth arc)
                                                                    0)
                                                  (fifth arc))
@@ -491,17 +499,26 @@
 ;;; Support function for mst-prim-recurse.
 ;;; Extract the array from heap-id and starting from start-index finds the
 ;;; lowest index where the element with the given value is present.
-(defun heap-first-index (heap-id value start-index)
-  (cond ((<= (length (heap-actual-heap (gethash heap-id *heaps*)))
-             start-index)
-         nil)
-        ((equal (second (aref (heap-actual-heap (gethash heap-id *heaps*))
-                              start-index))
-                value)
-         start-index)
-        (T (heap-first-index heap-id value (+ start-index 1)))))
-
-
+(defun heap-first-index (heap-id key value start-index)
+  (cond ((<= (heap-size (gethash heap-id *heaps*))
+	     start-index)
+	 nil)
+	((> (first (aref (heap-actual-heap (gethash heap-id *heaps*))
+			 start-index))
+	    key)
+	 nil)
+	((equal (aref (heap-actual-heap (gethash heap-id *heaps*))
+		      start-index)
+		(list key value))
+	 start-index)
+	(T (or (heap-first-index heap-id
+				 key
+				 value
+				 (+ (* 2 start-index) 1))
+	       (heap-first-index heap-id
+				 key
+				 value
+				 (+ (* 2 start-index) 2))))))
 
 ;;; Return the MST graph following a preorder visit, arcs with equal weights are
 ;;; lexicographically ordered.
