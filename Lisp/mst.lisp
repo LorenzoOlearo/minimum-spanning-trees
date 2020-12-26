@@ -237,17 +237,17 @@
   (let ((heap-rep (gethash heap-id *heaps*)))
     (cond ((and (< (heap-size heap-rep)
                    (length (heap-actual-heap heap-rep)))
-		(equal (aref (heap-actual-heap heap-rep)
+                (equal (aref (heap-actual-heap heap-rep)
                              (heap-size heap-rep))
                        nil))
            (setf (aref (heap-actual-heap heap-rep)
                        (heap-size heap-rep))
-		 (list inf v))
+                 (list inf v))
            (setf (third (gethash heap-id *heaps*))
-		 (+ 1 (heap-size heap-rep)))
-	   (heap-decrease-key (heap-actual-heap heap-rep)
-			      (- (heap-size heap-rep) 1)
-			      k))
+                 (+ 1 (heap-size heap-rep)))
+           (heap-decrease-key (heap-actual-heap heap-rep)
+                              (- (heap-size heap-rep) 1)
+                              k))
           (T (error "HEAP FULL ERROR")))))
 
 
@@ -434,7 +434,11 @@
 ;;; Executes the recursively the iterating part of the algorithm.
 (defun mst-prim-recurse (graph-id)
   (cond ((heap-not-empty graph-id)
-         (let ((minimum (heap-extract graph-id)))
+         (let ((minimum (heap-extract graph-id))
+               (heap (gethash heap-id *heaps*))
+               (heap-actual-heap (heap-actual-heap (list 'VERTEX-KEY
+                                                         graph-id
+                                                         (fourth (heap))))))
            (mapcar #'(lambda (arc)
                        (cond ((and (integerp (heap-first-index graph-id
                                                                (fourth arc)
@@ -517,6 +521,7 @@
                               #'STRING< :KEY #'(lambda (arc)
                                                  (write-to-string (third arc))))
                               #'< :KEY #'FOURTH)))
+
 
 
 ;;; Clear all the hash tables related to the Prim's algorithm
