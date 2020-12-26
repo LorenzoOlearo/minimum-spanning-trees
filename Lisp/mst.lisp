@@ -99,7 +99,7 @@
 ;;; The arcs elements of the list are rapresented with the following form:
 ;;; (arc graph-id vertex-id vertex-neighbor weight)
 ;;; Note that the implementation assumes a non oriented graph.
-(defun graph-vertex-neighbors (graph-id vertex-id)
+(defun graph-vertex-neighbors-vecchio (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (arc)
                       (cond ((equal (third arc) vertex-id)
@@ -113,7 +113,22 @@
                             (T nil)))
                   (graph-arcs graph-id))))
 
-
+(defun graph-vertex-neighbors (graph-id vertex-id)
+  (remove nil
+	  (mapcar #'(lambda (u)
+		      (or (gethash (list 'ARC graph-id vertex-id u) *arcs*)
+			  (cond ((gethash (list 'ARC graph-id u vertex-id) *arcs*)
+				 (list 'ARC
+				       graph-id
+				       vertex-id
+				       u
+				       (fifth (gethash (list 'ARC
+							     graph-id
+							     u
+							     vertex-id)
+						       *arcs*)))))))
+		  (graph-vertices graph-id))))
+		      
 
 ;; PLACEHOLDER while waiting for updated specifics.
 ;; How at least one of the two neighbors function should look like.
@@ -434,11 +449,7 @@
 ;;; Executes the recursively the iterating part of the algorithm.
 (defun mst-prim-recurse (graph-id)
   (cond ((heap-not-empty graph-id)
-         (let ((minimum (heap-extract graph-id))
-               (heap (gethash heap-id *heaps*))
-               (heap-actual-heap (heap-actual-heap (list 'VERTEX-KEY
-                                                         graph-id
-                                                         (fourth (heap))))))
+         (let ((minimum (heap-extract graph-id)))
            (mapcar #'(lambda (arc)
                        (cond ((and (integerp (heap-first-index graph-id
                                                                (fourth arc)
