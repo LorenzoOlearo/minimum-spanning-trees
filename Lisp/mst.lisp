@@ -553,6 +553,21 @@
 
 
 
+;;; Search indices in the *indices* hashtable before searching the element in
+;;; the heap
+(defun hashed-heap-first-index (heap-id key value start-index)
+  (or (gethash (list 'INDEX
+                      (heap-actual-heap (gethash heap-id *heaps*))
+                      (list key value))
+               *indices*)
+       (setf (gethash (list 'INDEX
+                            (heap-actual-heap (gethash heap-id *heaps*))
+                            (list key value))
+                      *indices*)
+             (heap-first-index heap-id key value start-index))))
+
+
+
 ;;; Return the MST graph following a preorder visit, arcs with equal weights are
 ;;; lexicographically ordered.
 (defun mst-get (graph-id source-id)
