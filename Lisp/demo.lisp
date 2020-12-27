@@ -33,6 +33,8 @@
 
 ;;; Create a new simple heap.
 (defun load-demo-heap (heap-id)
+  (cond ((gethash heap-id *heaps*)
+         (heap-delete heap-id)))
   (new-heap heap-id 20)
   (heap-insert heap-id 1 'one)
   (heap-insert heap-id 8 'eight)
@@ -46,6 +48,7 @@
 ;;; Demo function for primkiller graphs.
 ;;; For each arc add the corresponding vertices.
 (defun demo-new-arc (graph-id v u &optional (weight 1))
+  (new-graph)
   (new-vertex graph-id v)
   (new-vertex graph-id u)
   (remhash (list 'arc graph-id u v) *arcs*)
