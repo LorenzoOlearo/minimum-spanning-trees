@@ -603,7 +603,8 @@
 ;;; Clear all the hash tables related to the Prim's algorithm
 (defun prim-reset (heap-id)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) heap-id)
+               (declare (ignore v))
+               (cond ((equal k heap-id)
                       (remhash k *heaps*))))
            *heaps*)
   (maphash #'(lambda (k v)
