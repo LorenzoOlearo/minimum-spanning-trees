@@ -287,10 +287,10 @@
 
 (defun heap-decrease-key-shift-up (actual-heap i)
   (cond ((and (> i 0)
-              (> (first (aref actual-heap (floor i 2)))
+              (> (first (aref actual-heap (floor (- i 1) 2)))
                  (first (aref actual-heap i))))
-         (aswitch actual-heap (floor i 2) i)
-         (heap-decrease-key-shift-up actual-heap (floor i 2)))
+         (aswitch actual-heap (floor (- i 1) 2) i)
+         (heap-decrease-key-shift-up actual-heap (floor (- i 1) 2)))
         (T T)))
 
 
@@ -349,8 +349,8 @@
 ;;;     min-heapify(A, minimum)
 ;;;
 (defun heapify (heap-id i)
-  (let ((l (* i 2))
-        (r (+ (* i 2) 1))
+  (let ((l (+ (* i 2) 1))
+        (r (+ (* i 2) 2))
 	(heap-rep (gethash heap-id *heaps*)))
     (cond
      ((and (< l (heap-size heap-rep))
@@ -450,14 +450,11 @@
 (defun mst-prim-recurse (graph-id)
   (cond ((heap-not-empty graph-id)
          (let ((minimum (heap-extract graph-id)))
+	   (setf (gethash (list 'VISITED graph-id (second minimum)) *visited*)
+		 (list 'VERTEX graph-id (second minimum)))
            (mapcar #'(lambda (arc)
-                       (cond ((and (integerp (heap-first-index graph-id
-							       (fourth (gethash (list 'VERTEX-KEY
-										      graph-id
-										      (fourth arc))
-										*vertex-keys*))
-                                                               (fourth arc)
-                                                               0))
+                       (cond ((and (equal (gethash (list 'VISITED graph-id (fourth arc)) *visited*)
+					  nil)
                                    (< (fifth arc)
                                       (fourth (gethash (list 'VERTEX-KEY
                                                              graph-id
@@ -520,6 +517,8 @@
 				 value
 				 (+ (* 2 start-index) 2))))))
 
+
+
 ;;; Return the MST graph following a preorder visit, arcs with equal weights are
 ;;; lexicographically ordered.
 (defun mst-get (graph-id source-id)
@@ -566,7 +565,11 @@
   (maphash #'(lambda (k v)
                (cond ((equal (second v) heap-id)
                       (remhash k *previous*))))
-           *previous*))
+           *previous*)
+  (maphash #'(lambda (k v)
+               (cond ((equal (second v) heap-id)
+                      (remhash k *visited*))))
+           *visited*))
 
 
 
