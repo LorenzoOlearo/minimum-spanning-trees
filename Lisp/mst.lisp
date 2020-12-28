@@ -254,26 +254,28 @@
 ;;; Min-Heap-Insert(A, Key)
 ;;;     A.heap-size = A.heap-size + 1
 ;;;     A[A.heap-size] = -inf
-;;;     Heap-Decrease-Key(A, A.heap-size, key)
+;;;     Heap-Decrease-Key(A, (A.heap-size - 1), key)
 ;;;
-(defun old-heap-insert (heap-id k v)
-  (let ((heap-rep (gethash heap-id *heaps*)))
-    (cond ((and (< (heap-size heap-rep)
-                   (length (heap-actual-heap heap-rep)))
-                (equal (aref (heap-actual-heap heap-rep)
-                             (heap-size heap-rep))
-                       nil))
-           (setf (aref (heap-actual-heap heap-rep)
-                       (heap-size heap-rep))
-                 (list inf v))
+(defun heap-insert (heap-id k v)
+  (cond ((and (< (heap-size (gethash heap-id *heaps*))
+                 (length (heap-actual-heap (gethash heap-id *heaps*))))
+              (equal (aref (heap-actual-heap (gethash heap-id *heaps*))
+                           (heap-size (gethash heap-id *heaps*)))
+                     nil))
+         (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
+                     (heap-size (gethash heap-id *heaps*)))
+               (list inf v))
 
-           (setf (third (gethash heap-id *heaps*))
-                 (+ 1 (heap-size heap-rep)))
+         (setf (gethash heap-id *heaps*)
+               (list 'HEAP
+                     heap-id
+                     (+ (heap-size (gethash heap-id *heaps*)) 1)
+                     (heap-actual-heap (gethash heap-id *heaps*))))
 
-           (heap-decrease-key (heap-actual-heap heap-rep)
-                              (- (heap-size heap-rep) 1)
-                              k))
-          (T (error "HEAP FULL ERROR")))))
+         (heap-decrease-key (heap-actual-heap (gethash heap-id *heaps*))
+                            (- (heap-size (gethash heap-id *heaps*)) 1)
+                            k))
+        (T (error "HEAP FULL ERROR"))))
 
 
 
@@ -323,27 +325,26 @@
 ;;;     min = A[1]
 ;;;     A[1] = A[A.heapsize]
 ;;;     A.heapsize = A.heapsize - 1
-;;;     min-heapify(A, 1)
+;;;     min-heapify(A, 0)
 ;;;     return min
 ;;;
 (defun heap-extract (heap-id)
-  (let ((heap-rep (gethash heap-id *heaps*)))
-    (cond ((< (heap-size heap-rep) 1)
-           (error "HEAP UNDERFLOW ERROR"))
-          (T (setf (gethash heap-id *heaps*)
-                   (list 'HEAP
-                         heap-id
-                         (- (heap-size heap-rep) 1)
-                         (heap-actual-heap heap-rep)))
-             (aswitch (heap-actual-heap heap-rep)
-                      0
-                      (- (heap-size heap-rep) 1))
-             (heapify heap-id 0)
-             (car (cons (aref (heap-actual-heap heap-rep)
-                              (- (heap-size heap-rep) 1))
-                        (setf (aref (heap-actual-heap heap-rep)
-                                    (- (heap-size heap-rep) 1))
-                              nil)))))))
+  (cond ((heap-empty heap-id)
+         (error "HEAP UNDERFLOW ERROR"))
+        (T (setf (gethash heap-id *heaps*)
+                 (list 'HEAP
+                       heap-id
+                       (- (heap-size (gethash heap-id *heaps*)) 1)
+                       (heap-actual-heap (gethash heap-id *heaps*))))
+           (aswitch (heap-actual-heap (gethash heap-id *heaps*))
+                    0
+                    (heap-size (gethash heap-id *heaps*)))
+           (heapify heap-id 0)
+           (car (cons (aref (heap-actual-heap (gethash heap-id *heaps*))
+                            (heap-size (gethash heap-id *heaps*)))
+                      (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
+                                  (heap-size (gethash heap-id *heaps*)))
+                            nil))))))
 
 
 
