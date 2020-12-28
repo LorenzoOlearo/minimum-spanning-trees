@@ -466,24 +466,29 @@
              (setf (gethash (list 'VISITED graph-id (second minimum)) *visited*)
                    (list 'VERTEX graph-id (second minimum)))
              (mapcar #'(lambda (arc)
-                         (cond ((and (equal (gethash (list 'VISITED graph-id (fourth arc)) *visited*)
+                         (cond ((and (equal (gethash (list 'VISITED
+                                                           graph-id
+                                                           (fourth arc))
+                                                     *visited*)
                                             nil)
                                      (< (fifth arc)
                                         (fourth (gethash (list 'VERTEX-KEY
                                                                graph-id
                                                                (fourth arc))
                                                          *vertex-keys*))))
-                                (heap-decrease-key (heap-actual-heap (gethash
-                                                                      graph-id
-                                                                      *heaps*))
-                                                   (heap-first-index graph-id
-                                                                     (fourth (gethash (list 'VERTEX-KEY
-                                                                                            graph-id
-                                                                                            (fourth arc))
-                                                                                      *vertex-keys*))
-                                                                     (fourth arc)
-                                                                     0)
-                                                   (fifth arc))
+                                (heap-decrease-key
+                                 (heap-actual-heap (gethash
+                                                    graph-id
+                                                    *heaps*))
+                                 (heap-first-index
+                                  graph-id
+                                  (fourth (gethash (list 'VERTEX-KEY
+                                                         graph-id
+                                                         (fourth arc))
+                                                   *vertex-keys*))
+                                  (fourth arc)
+                                  0)
+                                 (fifth arc))
                                 (setf (gethash (list 'PREVIOUS
                                                      graph-id
                                                      (fourth arc))

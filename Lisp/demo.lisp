@@ -48,7 +48,7 @@
 ;;; Demo function for primkiller graphs.
 ;;; For each arc add the corresponding vertices.
 (defun demo-new-arc (graph-id v u &optional (weight 1))
-  (new-graph)
+  (new-graph graph-id)
   (new-vertex graph-id v)
   (new-vertex graph-id u)
   (remhash (list 'arc graph-id u v) *arcs*)
