@@ -129,19 +129,19 @@
 (defun fixed-graph-vertex-adjacent (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (u)
-		      (cond ((or (gethash (list 'ARC
-						graph-id
-						vertex-id
-						(third u))
-					  *arcs*)
-				 (gethash (list 'ARC
-						graph-id
-						(third u)
-						vertex-id)
-					  *arcs*))
-			     (list 'VERTEX graph-id (third u)))
-			    (T nil)))
-		  (graph-vertices graph-id))))
+                      (cond ((or (gethash (list 'ARC
+                                                graph-id
+                                                vertex-id
+                                                (third u))
+                                          *arcs*)
+                                 (gethash (list 'ARC
+                                                graph-id
+                                                (third u)
+                                                vertex-id)
+                                          *arcs*))
+                             (list 'VERTEX graph-id (third u)))
+                            (T nil)))
+                  (graph-vertices graph-id))))
 
 
 ;;; Return a list containing all the vertices reachables from v, these
@@ -150,23 +150,23 @@
 ;;; Note that the implementation assumes a non oriented graph.
 (defun graph-vertex-adjacent (graph-id vertex-id)
   (remove nil
-	  (mapcar #'(lambda (u)
-		      (cond ((or (gethash (list 'ARC
-						graph-id
-						vertex-id
-						(third u))
-					  *arcs*)
-				 (gethash (list 'ARC
-						graph-id
-						(third u)
-						vertex-id)
-					  *arcs*))
-			     (list 'ARC
-				   graph-id
-				   vertex-id
-				   (third u)))
-			    (T nil)))
-		  (graph-vertices graph-id))))
+          (mapcar #'(lambda (u)
+                      (cond ((or (gethash (list 'ARC
+                                                graph-id
+                                                vertex-id
+                                                (third u))
+                                          *arcs*)
+                                 (gethash (list 'ARC
+                                                graph-id
+                                                (third u)
+                                                vertex-id)
+                                          *arcs*))
+                             (list 'ARC
+                                   graph-id
+                                   vertex-id
+                                   (third u)))
+                            (T nil)))
+                  (graph-vertices graph-id))))
 
 
 
@@ -569,7 +569,7 @@
     (stable-sort (stable-sort acc
                               #'STRING< :KEY #'(lambda (arc)
                                                  (write-to-string (third arc))))
-                              #'< :KEY #'FOURTH)))
+                 #'< :KEY #'FOURTH)))
 
 
 
@@ -592,6 +592,13 @@
                (cond ((equal (second v) heap-id)
                       (remhash k *visited*))))
            *visited*))
+
+
+;;; Return the sum of the weight of all the arcs making the MST solution
+(defun mst-weight (graph-id source-id)
+  (apply #'+ (mapcar #'(lambda (l)
+                         (fourth l))
+                     (mst-get graph-id source-id))))
 
 
 
