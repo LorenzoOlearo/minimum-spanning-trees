@@ -99,20 +99,6 @@
 ;;; The arcs elements of the list are rapresented with the following form:
 ;;; (arc graph-id vertex-id vertex-neighbor weight)
 ;;; Note that the implementation assumes a non oriented graph.
-(defun graph-vertex-neighbors-vecchio (graph-id vertex-id)
-  (remove nil
-          (mapcar #'(lambda (arc)
-                      (cond ((equal (third arc) vertex-id)
-                             arc)
-                            ((equal (fourth arc) vertex-id)
-                             (list 'ARC
-                                   graph-id
-                                   vertex-id
-                                   (third arc)
-                                   (fifth arc)))
-                            (T nil)))
-                  (graph-arcs graph-id))))
-
 (defun graph-vertex-neighbors (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (u)
@@ -140,16 +126,22 @@
 
 ;; PLACEHOLDER while waiting for updated specifics.
 ;; How at least one of the two neighbors function should look like.
-(defun fixed-graph-vertices (graph-id vertex-id)
+(defun fixed-graph-vertex-adjacent (graph-id vertex-id)
   (remove nil
-          (mapcar #'(lambda (arc)
-                      (cond ((equal (third arc) vertex-id)
-                             (list 'vertex graph-id (fourth arc)))
-                            ((equal (fourth arc) vertex-id)
-                             (list 'vertex graph-id (third arc)))
-                            (T nil)))
-                  (graph-arcs graph-id))))
-
+          (mapcar #'(lambda (u)
+		      (cond ((or (gethash (list 'ARC
+						graph-id
+						vertex-id
+						(third u))
+					  *arcs*)
+				 (gethash (list 'ARC
+						graph-id
+						(third u)
+						vertex-id)
+					  *arcs*))
+			     (list 'VERTEX graph-id (third u)))
+			    (T nil)))
+		  (graph-vertices graph-id))))
 
 
 ;;; Return a list containing all the vertices reachables from v, these
@@ -158,13 +150,23 @@
 ;;; Note that the implementation assumes a non oriented graph.
 (defun graph-vertex-adjacent (graph-id vertex-id)
   (remove nil
-          (mapcar #'(lambda (arc)
-                      (cond ((equal (third arc) vertex-id)
-                             (remove-last arc))
-                            ((equal (fourth arc) vertex-id)
-                             (remove-last  arc))
-                            (T nil)))
-                  (graph-arcs graph-id))))
+	  (mapcar #'(lambda (u)
+		      (cond ((or (gethash (list 'ARC
+						graph-id
+						vertex-id
+						(third u))
+					  *arcs*)
+				 (gethash (list 'ARC
+						graph-id
+						(third u)
+						vertex-id)
+					  *arcs*))
+			     (list 'ARC
+				   graph-id
+				   vertex-id
+				   (third u)))
+			    (T nil)))
+		  (graph-vertices graph-id))))
 
 
 
