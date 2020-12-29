@@ -10,19 +10,51 @@ use_module(library(csv)).
 
 
 % Informs the interpreter that the definition of the predicates may change
-% during execution (using assert/1 and/or retract/1).
-:- dynamic graph/1, vertex/2, arc/4.
+% during execution (using assert/1 and/or retract/1)
+:- dynamic
+
+%!	graph(+Graph:term) is semidet
+%
+%	Predicate that is true when the term Graph is a graph
+
+graph/1,
 
 
-% new_graph/1 Adds a graph to the knowledge base if not already existing.
+%!	vertex(+Graph:graph, +Vertex:vertex) is semidet
+%
+%	Predicate that is true when Vertex is a vertex in the graph Graph
+
+vertex/2,
+
+
+
+%!	arc(+Graph:graph, +Source:vertex, +Destination:vertex, +Weight:number)
+%
+%	Predicate that is true when Source and Destination are two vertices in
+%	the graph Graph joined by an arc of weight Weight
+
+arc/4.
+
+
+%!	new_graph(+Graph:term) is det
+%
+%	Predicate that asserts a graph/1 Graph if not already existing
+%	The predicate is always true
+%
+%	@arg Graph term to be asserted as graph
 
 new_graph(G) :- graph(G), !.
 
 new_graph(G) :- assert(graph(G)), !.
 
 
-% delete_graph/1 Removes a graph and all his nodes and arches form the knowledge
-% base
+%!	delete_graph(+Graph:graph) is det
+%
+%	Predicate that retracts all arc/4, vertex/2 and graph/1 associated with
+%	graph form the knowledge base <br>
+%	The predicate is always true
+%
+%	@arg Graph graph object of the action
 
 delete_graph(G) :-
 	retractall(arc(G, _, _, _)),
@@ -30,36 +62,62 @@ delete_graph(G) :-
 	retractall(graph(G)).
 
 
-
-% new_vertex/2 Adds a vertex V to a graph in the knowledge base. false if the
-% graph is not in the knowledge base
+%!	new_vertex(+Graph:graph, +Vertex:term) is semidet
+%
+%	Predicate that asserts a vertex/2 that associates Graph with Vertex if not
+%	already associated <br>
+%	The predicate is false if Graph is not a graph, else is true
+%
+%	@arg Graph graph object of the action
+%	@arg Vertex term to be asserted as vertex
 
 new_vertex(G, V) :-
-	graph(G),
 	vertex(G, V), !.
 
 new_vertex(G, V) :-
-	graph(G),
-	not(vertex(G, V)),
+	graph(G), !,
 	assert(vertex(G, V)).
 
 
+%!	graph_vertices(+Graph:graph, -Vertices:list) is semidet
+%
+%	Predicate that is true when Vertices contains every vertex/2 associated
+%	with the graph Graph <br>
+%	The predicate is false if Graph is not a graph
+%
+%	@arg Graph graph object of the action
+%	@arg Vertices list of vertex/2 associated with Graph, empty if Graph is an
+%		empty graph
 
-% graph_vertices/2 True when Vs is a list of every vertex in G
-
-%graph_vertices(G, Vs) :- findall(V, vertex(G, V), Vs).
-graph_vertices(G, Vs) :- findall(vertex(G, V), vertex(G, V), Vs).
-
+graph_vertices(G, Vs) :-
+	graph(G),
+	findall(vertex(G, V), vertex(G, V), Vs).
 
 
-% list_vertices/1 Prints the list of vertices in a graph G
+%!	list_vertices(+Graph:graph) is det
+%
+%	Predicate that prints listing of all vertex/2 associated with the graph
+%	Graph <br>
+%	The predicate is always true
+%
+%	@arg Graph graph object of the action
 
 list_vertices(G) :- listing(vertex(G, _)).
 
 
-
-% new_arc/4 adds a weighted arc (an edge according to graph theory) to a graph G
-% in the knowledge base
+%!	new_arc(+Graph:graph, +Source:vertex,
+%!	+Destination:vertex, +Weight:number) is semidet
+%
+%	Predicate that asserts an arc/4 from Source to Destination in
+%	the graph <br>
+%	Graph with assigned weight Weight <br>
+%	The predicate retracts any preexisting arc/4 joining Source and
+%	Destination
+%
+%	@arg Graph graph object of the action
+%	@arg Source vertex the arc starts from
+%	@arg Destination vertex the arc arrives in
+%	@arg Weight weight of the arc
 
 new_arc(G, U, V, Weight) :-
 	graph(G),
@@ -70,44 +128,82 @@ new_arc(G, U, V, Weight) :-
 	assert(arc(G, U, V, Weight)).
 
 
-
-% new_arc/3 adds a weighted arc with weight 1 (an edge according to graph
-% theory) to a graph G in the knowledge base
+%!	new_arc(+Graph:graph, +Source:vertex, +Destination:vertex) is semidet
+%
+%	Assumes weight of the arc is 1
+%
+%	@arg Graph graph object of the action
+%	@arg Source vertex the arc starts from
+%	@arg Destination vertex the arc arrives in
+%	@see new_arc/4
 
 new_arc(G, U, V) :- new_arc(G, U, V, 1).
 
 
+%!	graph_arcs(+Graph:graph, -Arcs:list) is semidet
+%
+%	Predicate that is true when Arcs is a list of all the arc/4 associated
+%	with the graph Graph <br>
+%	The predicate is false when Graph is not a graph
+%
+%	@arg Graph graph object of the action
+%	@arg Arcs list of arc/4 associated with Graph, empty if Graph is an empty
+%		graph
 
-% arcs/2 true when Es is a list of every arcs in a graph G
-
-graph_arcs(G, Es) :-
+graph_arcs(G, Arcs) :-
 	graph(G),
-	findall(arc(G, V, U, W), arc(G, V, U, W), Es).
+	findall(arc(G, V, U, W), arc(G, V, U, W), Arcs).
 
 
+%!	vertex_neighbors(+Graph:graph, +Vertex:vertex, -Neighbors:list) is semidet
+%
+%	Predicate that is true when Neighbors is the list of all the arc/4 that
+%	are incident to Vertex <br>
+%	The predicate is false when Vertex is not a vertex associated with
+%	 Graph <br>
+%	This predicate is to be used in an undirected graph context
+%
+%	@arg Graph graph object of the action
+%	@arg Vertex end-point of the arcs in Neighbors
+%	@arg Neighbors list of arc/4 that are incident to Vertex, with the oreder
+% 		of the arguments arranged to have Vertex as the second argument
+%		regardless of the order they are arranged in the knowledge base
 
-% vertex_neighbors/3 true when V is a vertex in G and Ns is a list of all the
-% adjacent arcs (in a non oriented graph interpretation)
-
-vertex_neighbors(G, V, Ns) :-
+vertex_neighbors(G, V, Neighbors) :-
 	vertex(G, V),
-	findall(arc(G, V, N, W), arc(G, V, N, W), From),
-	findall(arc(G, X, V, W), arc(G, X, V, W), To),
-	append(From, To, Ns).
+	findall([G, V, N, W], arc(G, V, N, W), From),
+	findall([G, V, X, W], arc(G, X, V, W), To),
+	append(From, To, Ns),
+	build_arcs_from_list(Ns, Neighbors).
 
 
-
-% vertex_neighbors_oriented/3 true when V is a vertex in G and Ns is a list of
-% all the adjacent arcs (in a oriented graph interpretation)
+%!	vertex_neighbors_oriented(+Graph:graph,
+%!	+Vertex:vertex, -Neighbors:list) is semidet
+%
+%	Predicate that is true when Neighbors is the list of all the arc/4 that
+%	are have Vertex as tail <br>
+%	The predicate is false when Vertex is not a vertex associated with
+%	Graph <br>
+%	This predicate is to be used in a directed graph context
+%
+%	@arg Graph graph object of the action
+%	@arg Vertex tail of the arcs in Neighbors
+%	@arg Neighbors list of arc/4 that have Vertex as tail
 
 vertex_neighbors_oriented(G, V, Ns) :-
 	vertex(G, V),
 	findall(arc(G, V, N, W), arc(G, V, N, W), Ns).
 
 
-
-% adjs/3 true when V is a vertex in G and Vs is a list of all the adjacent
-% vertices (in a non oriented graph interpretation)
+%!	adjs(+Graph:graph, +Vertex:vertex, -Adjacents:list) is semidet
+%
+%	Predicate that is true when Adjacents is the list of all the vertex/2
+%	that are joined to Vertex by an arc <br>
+%	This predicate is to be used in an undirected graph context
+%
+%	@arg Graph graph object of the action
+%	@arg Vertex vertex the arcs in Adjacents are joined to
+%	@arg Adjacents list of vertex/2 joined to Vertex by an arcs
 
 adjs(G, V, Vs) :-
 	vertex(G, V),
@@ -116,23 +212,40 @@ adjs(G, V, Vs) :-
 	append(From, To, Vs).
 
 
-
-% adjs_oriented/3 true when V is a vertex in G and Vs is a list of all the
-% adjacent vertices (in a oriented graph interpretation)
+%!	adjs_oriented(+Graph:graph, +Vertex:vertex, -Adjacents:list) is semidet
+%
+%	Predicate that is true when Adjacents is the list of all the vertex/2
+%	that are head to an arc having Vertex as tail <br>
+%	This predicate is to be used in a directed graph context
+%
+%	@arg Graph graph object of the action
+%	@arg Vertex vertex the arcs in Adjacents are joined to
+%	@arg Adjacents list of vertex/2 that are head of an arc having Vertex as
+%		tail
 
 adjs_oriented(G, V, Vs) :-
 	vertex(G, V),
 	findall(vertex(G, N), arc(G, V, N, _), Vs).
 
 
+%!	list_arcs(+Graph:graph) is semidet
+%
+%	Predicate that prints the listing of arc/4 associated with G <br>
+%	The predicate is false when Graph is not a graph
+%
+%	@arg Graph graph object of the action
 
-% list_arcs/1 prints the list of all arcs in G
+list_arcs(G) :-
+	graph(G),
+	listing(arc(G, _, _, _)).
 
-list_arcs(G) :- listing(arc(G, _, _, _)).
 
-
-
-% list_graph/1 prints the list of all vertices and arcs
+%!	list_graph(+Graph:graph) is semidet
+%
+%	Predicate that prints the listing of arc/4, vertices/2 <br>
+%	The predicate is false when Graph is not a graph
+%
+%	@arg Graph graph object of the action
 
 list_graph(G) :-
 	graph(G),
@@ -140,26 +253,40 @@ list_graph(G) :-
 	list_vertices(G).
 
 
-
-% read_graph/2 creates a new graph G and its arcs and verices according
-% to csv file FileName with tabulation as separator
+%!	read_graph(+Graph:graph, +FileName:path) is semidet
+%
+%	Predicate that reads arc/4 of Graph from a tab separated csv file,
+%	every arc will be written as a triple {Source Destination Weight}
+%	omitting the term representing the graph <br>
+%	Graph will be asserted as graph if not already a graph <br>
+%	Every vertex present as end-point of the arc will be asserted as
+%	vertex of Graph <br>
+%	Every arc will be asserted as arc of Graph
+%
+%	@arg Graph graph object of the action
+%	@arg FileName the path of the input csv file
 
 read_graph(G, FileName) :-
 	csv_read_file(FileName, Rows, [separator(0'\t)]),
 	new_graph_from_rows(G, Rows).
 
 
-
-% new_graph_from_rows/2 support procedure to create a graph G given a list in
-% the format[row(V, U, W)] where V is source vertex, U is destination vertex
-% and W is weight of the arc between the two
+%!	new_graph_from_rows(+Graph:graph, +Rows:rows) is semidet
+%
+%	Support predicate for read_graph/2 <br>
+%	Predicate to create a graph G given a list in
+%	the format[row(V, U, W)] where V is source vertex, U is destination
+%	vertex and W is weight of the arc between the two <br>
+%	This Predicate asserts graph/1, vertex/2, arc/4 as needed to represent
+%	the arcs described in Rows
+%
+%	@arg Graph graph object of the action
+%	@arg Rows list of row/3 elements
 
 new_graph_from_rows(G, []) :- new_graph(G), !.
 
-new_graph_from_rows(G, [Row | Rows]) :-
-	Row =.. [row, V, U, W],
-	atomic(W),
-	not(atom(W)),
+new_graph_from_rows(G, [row(V, U, W) | Rows]) :-
+	number(W),
 	new_graph(G),
 	new_vertex(G, V),
 	new_vertex(G, U),
@@ -167,25 +294,36 @@ new_graph_from_rows(G, [Row | Rows]) :-
 	new_graph_from_rows(G, Rows).
 
 
-% write_graph/3 writes a graph G along with its arcs and vertices to a CSV file
-% represented by FileName
+%!	write_graph(+Graph:graph, +FileName:path) is semidet
+%
+%	Predicate that writes arc/4 of Graph to a tab separated csv file,
+%	every arc will be written as a triple {Source, Destination, Weight}
+%	omitting the term representing the graph
+%
+%	@arg Graph graph object of the action
+%	@arg FileName the path of the output csv file
 
 write_graph(G, FileName, edges) :-
+	!,
 	write_arcs_in_rows(G, Rows),
 	csv_write_file(FileName, Rows, [separator(0'\t)]).
 
 write_graph(G, FileName, graph) :-
+	!,
 	graph_arcs(G, Arcs),
 	write_graph(Arcs, FileName, edges).
 
 write_graph(G, FileName) :- write_graph(G, FileName, graph).
 
 
-
-% write_graph_in_rows/2 support predicate for write_graph/2, given a list with
-% all the arcs of the graph it creates a formatted list where each entry is
-% the predicate row/3 and its terms are in the order: the source vertex V, the
-% destination vertex U and the weight of the arc between the two
+%!	write_arcs_in_rows(+Arcs:list, -Rows:list) is semidet
+%
+%	Support Predicate for write_graph/2 <br>
+%	Predicate that is true when Rows is a list of row/3 such that
+%	for every arc(G, V, U, W) in Arcs it contains a row(V, U, W)
+%
+%	@arg Arcs list of arc/4
+%	@arg Rows list of row/3
 
 write_arcs_in_rows([], []) :- !.
 
@@ -198,66 +336,105 @@ write_arcs_in_rows([Arc | Arcs], [Row | Rows]) :-
 
 % Informs the interpreter that the definition of the predicates may change
 % during execution (using assert/1 and/or retract/1).
-:- dynamic heap/2, heap_entry/4.
+:- dynamic
+
+%!	heap(+Heap:term, -Size:number) is semidet
+%
+%	Predicate that is true when Heap is a heap of size Size
+
+heap/2,
+
+
+%!	heap_entry(+Heap:heap, -Position:number, +Key:number, -Value:term) is nondet
+%
+%	Predicate that is true when Value is stored in the heap Heap with key Key
+%	and in position Position in the array representing the heap
+
+heap_entry/4.
 
 
 
-% new_heap/1 adds a new heap in the program's knowledge base
+%!	new_heap(+Heap:term) is det
+%
+%	Predicate that asserts heap/2 associated with Heap if not already
+%	existing<br>
+%	This predicate is always true
+%
+%	@arg Heap the term to be asserted as heap
 
 new_heap(H) :- heap(H, _), !.
+
 new_heap(H) :- assert(heap(H, 0)), !.
 
 
-
-% delete_heap/1 deletes the entire heap from the program's knownledge base
+%!	delete_heap(+Heap:heap) is det
+%
+%	Predicate that retracts heap/1 and all heap_entry/4 associated with
+%	Heap<br>
+%	This predicate is always true
+%
+%	@arg Heap heap object of the action
 
 delete_heap(H) :-
 	retractall(heap_entry(H, _, _, _)),
 	retractall(heap(H, _)).
 
 
-
-% heapsize/2 true when H is an heap and S its size
+%!	heap_has_size(+Heap:heap, -Size:number) is semidet
+%
+%	Predicate that is true when Size is the size of the heap Heap
+%
+%	@arg Heap heap object of the action
+%	@arg Size size of the heap
 
 heap_has_size(H, S) :- heap(H, S).
 
 
-
-% heap_empty/1 true if the heap H is empty
+%!	heap_empty(+Heap:heap) is semidet
+%
+%	Predicate that is true when Heap is a empty heap
+%
+%	@arg Heap heap object of the action
 
 heap_empty(H) :-
 	heap_has_size(H, S),
 	S = 0.
 
 
+%!	heap_not_empty(+Heap:heap) is semidet
+%
+%	Predicate that is true if the Heap is a non-empty heap
+%
+%	@arg Heap heap object of the action
 
-% heap_not_empty/1 true if the H is not empty thus heap_empty/1 cannot be proven
+heap_not_empty(H) :-
+	heap_has_size(H, S),
+	S > 0.
 
-heap_not_empty(H) :- not(heap_empty(H)).
 
-
-
-% heap_head/3 true when the minimum key in the heap H is K and V is the
-% associated value
+%!	heap_head(+Heap:heap, -Key:number, -Value:term) is semidet
+%
+%	Predicate that is true when the minimum key in the heap Heap is Key and
+%	Value is the associated value
+%
+%	@arg Heap heap object of the action
+%	@arg Key key of the first element of the heap
+%	@arg Value value of the firt element of the heap
 
 heap_head(H, K, V) :-
 	heap_entry(H, 1, K, V).
 
 
-
-% min_of/2 support predicate for heap_head/2, given a list of keys and a key K,
-% the predicate is true if K is the minimum element
-
-min_of([K], K) :- !.
-
-min_of([K1 | Keys], K) :-
-	K =< K1,
-	min_of(Keys, K).
-
-
-
-% heap_extract/3 true when K, V are key and value of the head of the heap.
-% Changes the knowledge base removing the head from the heap
+%!	heap_extract(+Heap:heap, -Key:number, -Value:term) is semidet
+%
+%	Predicate that is true when Key, Value are key and value of the head
+%	of the heap Heap<br>
+%	This predicate changes the knowledge base removing the head from the heap
+%	and restructuring the heap to mantain the heap property
+%
+%	@arg Heap heap object of the action
+%	@arg Key key of the head of the heap
+%	@arg Value value of the head of the heap
 
 heap_extract(H, K, V) :-
 	heap_has_size(H, 1), !,
@@ -278,9 +455,16 @@ heap_extract(H, K, V) :-
 	heapify(H, 1).
 
 
-
-% heap_decrease_key/3 support procedure for heap operations, moves a heap_entry
-% from the position P to a new position according to the new key K
+%!	heap_decrease_key(+Heap:heap, +Position:number, +NewKey:number) is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that changes the key of the heap_entry/4 with position Position
+%	and moves it to a new position according to NewKey if NewKey is lesser
+%	then the preexisting key, else the predicate fails
+%
+%	@arg Heap heap object of the action
+%	@arg Position index of the heap array indexing the heap_entry/4
+%	@arg NewKey new value to be associated with the heap_entry/4
 
 heap_decrease_key(H, P, NewKey) :-
 	heap_entry(H, P, OldKey, V),
@@ -294,9 +478,14 @@ heap_decrease_key(H, OldKey, NewKey, V) :-
 	heap_move_up(H, P).
 
 
-
-% heap_move_up/2 support procedure for heap operations, moves a heap_entry,
-% in a heap H at position P, up until needed according to its key
+%!	heap_move_up(+Heap:heap, +Position:number) is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that moves a heap_entry/4, in a heap Heap at position Position,
+%	up until needed according to its key
+%
+%	@arg Heap heap object of the action
+%	@arg Position index of the heap array indexing the heap_entry/4
 
 heap_move_up(_, 1) :- !.
 
@@ -317,9 +506,15 @@ heap_move_up(H, P) :-
 	heap_move_up(H, PPar).
 
 
-
-% heap_insert/3 asserts a new heap_entry with key K and value V and keeps the
-% heap-propriety
+%!	heap_insert(+Heap:heap, +Key:number, +Value:term) is semidet
+%
+%	Predicate that asserts a new heap_entry/4 with key Key and value Value<br>
+%	This predicate changes the knowledge base adding the new heap_entry/4 in
+%	the heap and restructuring the heap to mantain the heap property
+%
+%	@arg Heap heap object of the action
+%	@arg Key the key of the new heap_entry/4
+%	@arg Value the value of the new heap_entry/4
 
 heap_insert(H, K, V) :-
 	heap_has_size(H, S),
@@ -331,8 +526,13 @@ heap_insert(H, K, V) :-
 
 
 
-% heapify/2 restructures the heap taking for granted the two subtrees from P are
-% already heaps
+%!	heapify(+Heap:heap, +Position:number) is semidet
+%
+%	Predicate that restructures the heap taking for granted the two subtrees
+%	from P are already heaps
+%
+%	@arg Heap heap object of the action
+%	@arg Position index of the heap array to heapify
 
 heapify(H, P) :-
 	heap_has_size(H, S),
@@ -385,8 +585,16 @@ heapify(H, P) :-
 
 
 
-% heapify_on_different/3 support procedure for heap operations, calls an heapify
-% if Min is different from P
+%!	heapify_on_different(+Heap:heap, +To_heapify:number, +Position:number)
+%!	is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that calls an heapify/2 on To_heapify if it is different from
+%	Position
+%
+%	@arg Heap heap object of the action
+%	@arg To_heapify index of the heap array to heapify
+%	@arg Position generally the position previosly heapified
 
 heapify_on_different(H, Min, Min) :- ! , heap(H, _).
 
@@ -398,17 +606,28 @@ heapify_on_different(H, Min, P) :-
 
 
 
-% min_key/2 true when the third argument in form [K, P] is the couple of [K, P]
-% with minimum K between [K1, P1], [K2, P2]
+%	min_key([+Key1:number, +Position1:number],
+%!			[+Key2:number, +Position2:number]
+%!			[-KeyMin:number, -PositionMin:number]) is det
+%
+%	Support predicate for heap operations<br>
+%	Predicate that is true when [KeyMin, PositionMin] is the couple with
+%	minimum key between [Key1, Position1] and [Key2, Position2]
 
 min_key([K1, P1], [K2, _], [K1, P1]) :- K1 =< K2, !.
 
 min_key([K1, _], [K2, P2], [K2, P2]) :- K1 > K2, !.
 
 
-
-% heap_switch/2 support procedure for heap operations, switches positions in H
-% between the heap_entry at the given positions
+%!	heap_switch(+Heap:heap, +Position1:number, +Position2:number) is semidet
+%
+%	Support predicate for heap operations<br>
+%	Predicate that switches positions in Heap
+%	between the heap_entry/4 at the given positions
+%
+%	@arg Heap heap object of the action
+%	@arg Position1 position of the first heap_entry/4
+%	@arg Position2 position of the second heap_entry/4
 
 heap_switch(H, P, P) :- !, heap(H, _).
 
@@ -423,9 +642,23 @@ heap_switch(H, P1, P2) :-
 	assert(heap_entry(H, P1, K2, V2)).
 
 
-
-% modify_key/4 replaces the OldKey associated with a vertex V
-% in a heap H with the key NewKey without altering the min-heap property
+%!	modify_key(+Heap:heap, +NewKey:number, +OldKey:number, +Value:term)
+%!	is nondet
+%
+%	Predicate replaces the a heap_entry with key OldKey and value Value with
+%	one with NewKey as key and the same Value<br>
+%	This predicate changes the knowledge base changing the heap_entry/4 in
+%	the heap and restructuring the heap to mantain the heap property<br>
+%	This predicate is meant for a context with unique couple {key, value},
+%	else it is expected to work fine and change all the unifing heap_entry/4
+%	but the feature is untested<br>
+%	This predicate is meant to be used only for NewKey > OldKey for
+%	heap_decrease_key/3 is way more efficient in NewKey =< OldKey use case
+%
+%	@arg Heap heap object of the action
+%	@arg NewKey key to be assigned at heap_entry/4
+%	@arg OldKey key of preexisting heap_entry/4
+%	@arg Value	value of preexisting heap_entry/4
 
 modify_key(H, NewKey, OldKey, V) :-
 	heap_decrease_key(H, OldKey, -inf, V),
@@ -434,7 +667,12 @@ modify_key(H, NewKey, OldKey, V) :-
 
 
 
-% list_heap/1 lists the current internal heap representation on the console
+%!	list_heap(+Heap:heap) is semidet
+%
+%	Predicate that prints the listing of heap/2 and heap_entry/4 associated
+%	with heap Heap
+%
+%	@arg Heap heap object of the action
 
 list_heap(H) :-
 	heap(H, _),
@@ -443,8 +681,14 @@ list_heap(H) :-
 
 
 
-% heap_contains/3 is true when the heap H contains the entry with key K and
-% value V
+%!	heap_contains(+Heap:heap, +Key:number, +Value:term) is semidet
+%
+%	Predicate that is true when the heap Heap contains the heap_entry/4 with
+%	key Key and value Value
+%
+%	@arg Heap heap object of the action
+%	@arg Key key of the heap_entry/4
+%	@arg Value value of the heap_entry/4
 
 heap_contains(H, K, V) :-
 	heap_entry(H, _, K, V).
@@ -476,58 +720,54 @@ mst_prim(G) :-
 	S > 0, !,
 	heap_extract(G, _, V),
 	vertex_neighbors(G, V, Ns),
-	update_keys(G, Ns, V),
+	update_keys(G, Ns),
 	mst_prim(G).
 
 
 
 % mst_get/3
 
+% mst_get/3
+
 mst_get(G, Source, PreorderTree) :-
-	mst_get_neighbors(G, Source, Vs),
-	mst_get_recurse(G, Source, PreorderTree, Vs).
+	mst_get_neighbors(G, Source, Neighbors),
+	mst_get_recurse(Neighbors, PreorderTree).
 
 
 
 % mst_get_neighbors/3 support predicate for mst_get/3 could be incorporated in
 % mst_get/3
 
-mst_get_neighbors(G, Source, Neighbors) :-
-	findall([V, W], (vertex_previous(G, V, Source),
-					 arc(G, V, Source, W)), From),
-	findall([V, W], (vertex_previous(G, V, Source), arc(G, Source, V, W)), To),
-	append(From, To, Arcs),
-	sort(1, @=<, Arcs, VSort),
-	sort(2, @=<, VSort, WSort),
-	mst_get_extract_vertices(WSort, Neighbors).
+mst_get_neighbors(G, Source, WSort) :-
+	findall([G, Source, V, W] , (vertex_previous(G, V, Source),
+								   arc(G, V, Source, W)), From),
+	findall([G, Source, V, W], (vertex_previous(G, V, Source),
+								   arc(G, Source, V, W)), To),
+	append(From, To, List),
+	build_arcs_from_list(List, Arcs),
+	sort(3, @=<, Arcs, VSort),
+	sort(4, @=<, VSort, WSort).
 
 
 
-% mst_get_extract_vertices/2 support predicate for mst_get_neighbors/3
+% build_arcs_from_list/2
 
-mst_get_extract_vertices([], []) :- !.
+build_arcs_from_list([], []) :- !.
+build_arcs_from_list([Arg | Args], [Arc | Arcs]) :-
+	Arc =.. [arc | Arg],
+	build_arcs_from_list(Args, Arcs).
 
-mst_get_extract_vertices([[V, _] | Rest], [V | Vs]) :-
-	mst_get_extract_vertices(Rest, Vs).
 
 
-
-% mst_get_recurse/4 support predicate for mst_get, calls mst_get for all the
+% mst_get_recurse/2 support predicate for mst_get, calls mst_get for all the
 % adjacent nodes of Source given in as fouth argument
 
-mst_get_recurse(_, _, [], []) :- !.
+mst_get_recurse([], []) :- !.
 
-mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
-	arc(G, Source, V, W), !,
-	mst_get(G, V, PreorderTree),
-	mst_get_recurse(G, Source, Others, Vs),
-	append(PreorderTree, Others, Rest).
-
-mst_get_recurse(G, Source, [arc(G, Source, V, W) | Rest], [V | Vs]) :-
-	arc(G, V, Source, W), !,
-	mst_get(G, V, PreorderTree),
-	mst_get_recurse(G, Source, Others, Vs),
-	append(PreorderTree, Others, Rest).
+mst_get_recurse([arc(G, S, V, W) | Ns], [arc(G, S, V, W) | MST]) :-
+	mst_get(G, V, Tree),
+	mst_get_recurse(Ns, Rest),
+	append(Tree, Rest, MST).
 
 
 
@@ -540,13 +780,10 @@ init(H, G, [], Source) :-
 	!,
 	retract(vertex_key(G, Source, inf)),
 	assert(vertex_key(G, Source, 0)),
-	%modify_key(H, 0, inf, Source),
 	heap_decrease_key(H, inf, 0, Source),
-
 	heap_extract(H, 0, Source),
 	vertex_neighbors(G, Source, Ns),
-
-	update_keys(H, Ns, Source).
+	update_keys(H, Ns).
 
 init(H, G, [V | Vs], Source) :-
 	new_heap(H),
@@ -563,61 +800,27 @@ init(H, G, [V | Vs], Source) :-
 % specific arc, if there is no connection between the two vertices the
 % respective key in the heap entry will remains set to inf.
 
-update_keys(_, [], _) :- !.
+update_keys(_, []) :- !.
 
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, Source, V, W],
+update_keys(H, [arc(G, Source, V, W) | Ns]) :-
 	vertex_key(G, V, K),
 	heap_contains(H, K, V),
 	W < K, !,
 	retract(vertex_key(G, V, K)),
 	assert(vertex_key(G, V, W)),
-
-	%modify_key(H, W, K, V),
 	heap_decrease_key(H, K, W, V),
-
 	retractall(vertex_previous(G, V, _)),
 	assert(vertex_previous(G, V, Source)),
-	update_keys(H, Ns, Source).
+	update_keys(H, Ns).
 
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, V, Source, W],
+update_keys(H, [arc(G, _, V, W) | Ns]) :-
 	vertex_key(G, V, K),
 	heap_contains(H, K, V),
-	W < K, !,
-	retract(vertex_key(G, V, K)),
-	assert(vertex_key(G, V, W)),
-
-	%modify_key(H, W, K, V),
-	heap_decrease_key(H, K, W, V),
-
-	retractall(vertex_previous(G, V, _)),
-	assert(vertex_previous(G, V, Source)),
-	update_keys(H, Ns, Source).
-
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, Source, V, W],
-	vertex_key(G, V, K),
 	W >= K, !,
-	update_keys(H, Ns, Source).
+	update_keys(H, Ns).
 
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, V, Source, W],
-	vertex_key(G, V, K),
-	W >= K, !,
-	update_keys(H, Ns, Source).
-
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, Source, V, _],
-	vertex_key(G, V, K),
-	not(heap_contains(H, K, V)), !,
-	update_keys(H, Ns, Source).
-
-update_keys(H, [N | Ns], Source) :-
-	N =.. [arc, G, V, Source, _],
-	vertex_key(G, V, K),
-	not(heap_contains(H, K, V)), !,
-	update_keys(H, Ns, Source).
+update_keys(H, [_ | Ns]) :-
+	update_keys(H, Ns).
 
 
 
