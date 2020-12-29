@@ -1,4 +1,4 @@
-;;;; Demo data structures for mst.lisp
+;;;; Demo data structures and function for mst.lisp
 
 
 ;;; Create the graph shown in chapter 23.2 at page 523 under the Prim's
@@ -33,6 +33,8 @@
 
 ;;; Create a new simple heap.
 (defun load-demo-heap (heap-id)
+  (cond ((gethash heap-id *heaps*)
+         (heap-delete heap-id)))
   (new-heap heap-id 20)
   (heap-insert heap-id 1 'one)
   (heap-insert heap-id 8 'eight)
@@ -40,3 +42,15 @@
   (heap-insert heap-id 2 'two)
   (heap-insert heap-id 10 'ten)
   (heap-insert heap-id 5 'five))
+
+
+
+;;; Demo function for primkiller graphs.
+;;; For each arc add the corresponding vertices.
+(defun demo-new-arc (graph-id v u &optional (weight 1))
+  (new-graph graph-id)
+  (new-vertex graph-id v)
+  (new-vertex graph-id u)
+  (remhash (list 'arc graph-id u v) *arcs*)
+  (setf (gethash (list 'arc graph-id v u) *arcs*)
+        (list 'arc graph-id v u weight)))
