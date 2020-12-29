@@ -11,6 +11,8 @@
 (defparameter *heaps* (make-hash-table :test #'equal))
 (defparameter default-heap-size 42)
 
+(defparameter *indices* (make-hash-table :test #'equal))
+
 (defconstant inf most-positive-double-float)
 
 
@@ -34,12 +36,10 @@
 (defun delete-graph (graph-id)
   (remhash graph-id *graphs*)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) graph-id)
-                      (remhash k *vertices*))))
+               (cond ((equal (second v) graph-id) (remhash k *vertices*))))
            *vertices*)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) graph-id)
-                      (remhash k *arcs*))))
+               (cond ((equal (second v) graph-id) (remhash k *arcs*))))
            *arcs*))
 
 
@@ -210,7 +210,8 @@
 
 ;;; Access function for a heap-rep.
 (defun heap-id (heap-rep)
-  (cond ((equal (first heap-rep) 'heap)
+  (cond ((equal (first heap-rep)
+                'heap)
          (second heap-rep))
         (T nil)))
 
@@ -219,7 +220,8 @@
 ;;; Access function for a heap-rep.
 ;;; Return the number of elements in the heap NOT the actual array dimension.
 (defun heap-size (heap-rep)
-  (cond ((equal (first heap-rep) 'heap)
+  (cond ((equal (first heap-rep)
+                'heap)
          (third heap-rep))
         (T nil)))
 
@@ -228,7 +230,8 @@
 ;;; Access function for a heap-rep.
 ;;; Return the actual array representing the heap.
 (defun heap-actual-heap (heap-rep)
-  (cond ((equal (first heap-rep) 'heap)
+  (cond ((equal (first heap-rep)
+                'heap)
          (fourth heap-rep))
         (T nil)))
 
@@ -242,13 +245,15 @@
 
 
 (defun heap-empty (heap-id)
-  (cond ((zerop (third (gethash heap-id *heaps*))) T)
+  (cond ((zerop (third (gethash heap-id *heaps*)))
+         T)
         (T nil)))
 
 
 
 (defun heap-not-empty (heap-id)
-  (cond ((equal (heap-empty heap-id) nil))
+  (cond ((equal (heap-empty heap-id)
+                nil))
         (T nil)))
 
 
@@ -276,13 +281,14 @@
          (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
                      (heap-size (gethash heap-id *heaps*)))
                (list inf v))
-
+         (setf (gethash (list 'INDEX heap-id (list k v))
+                        *indices*)
+               (heap-size (gethash heap-id *heaps*)))
          (setf (gethash heap-id *heaps*)
                (list 'HEAP
                      heap-id
                      (+ (heap-size (gethash heap-id *heaps*)) 1)
                      (heap-actual-heap (gethash heap-id *heaps*))))
-
          (heap-decrease-key heap-id
                             (- (heap-size (gethash heap-id *heaps*)) 1)
                             k))
@@ -303,10 +309,23 @@
 (defun heap-decrease-key (heap-id i k)
   (cond ((>= (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
              k)
+         (remhash (list 'INDEX
+                        heap-id
+                        (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
+                  *indices*)
+         (setf (gethash (list 'INDEX
+                              heap-id
+                              (list k
+                                    (second (aref (heap-actual-heap (gethash
+                                                                     heap-id
+                                                                     *heaps*))
+                                                  i))))
+                        *indices*)
+               i)
          (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
-               (list k
-                     (second (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                   i))))
+               (list k (second (aref (heap-actual-heap (gethash heap-id
+                                                                *heaps*))
+                                     i))))
          (heap-decrease-key-shift-up heap-id i))
         (T (error "THE NEW KEY IS GREATER"))))
 
@@ -332,7 +351,9 @@
   (let ((vi (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
         (vj (aref (heap-actual-heap (gethash heap-id *heaps*)) j)))
     (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i) vj)
-    (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) j) vi)))
+    (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) j) vi)
+    (setf (gethash (list 'INDEX heap-id vi) *indices*) j)
+    (setf (gethash (list 'INDEX heap-id vj) *indices*) i)))
 
 
 
@@ -355,9 +376,14 @@
                        heap-id
                        (- (heap-size (gethash heap-id *heaps*)) 1)
                        (heap-actual-heap (gethash heap-id *heaps*))))
-           (heap-switch heap-id
-                        0
-                        (heap-size (gethash heap-id *heaps*)))
+           (heap-switch heap-id 0 (heap-size (gethash heap-id *heaps*)))
+           (remhash (list 'INDEX
+                          heap-id
+                          (aref (heap-actual-heap (gethash heap-id
+                                                           *heaps*))
+                                (heap-size (gethash heap-id
+                                                    *heaps*))))
+                    *indices*)
            (heapify heap-id 0)
            (car (cons (aref (heap-actual-heap (gethash heap-id *heaps*))
                             (heap-size (gethash heap-id *heaps*)))
@@ -496,7 +522,7 @@
                                                          *vertex-keys*))))
                                 (heap-decrease-key
                                  graph-id
-                                 (heap-first-index
+                                 (hashed-heap-first-index
                                   graph-id
                                   (fourth (gethash (list 'VERTEX-KEY
                                                          graph-id
@@ -531,6 +557,7 @@
 ;;; Extract the array from heap-id and starting from start-index finds the
 ;;; lowest index where the element with the given value is present.
 (defun heap-first-index (heap-id key value start-index)
+  (print "test")
   (cond ((<= (heap-size (gethash heap-id *heaps*))
              start-index)
          nil)
@@ -550,6 +577,21 @@
                                  key
                                  value
                                  (+ (* 2 start-index) 2))))))
+
+
+
+;;; Search indices in the *indices* hashtable before searching the element in
+;;; the heap
+(defun hashed-heap-first-index (heap-id key value start-index)
+  (or (gethash (list 'INDEX
+                     heap-id
+                     (list key value))
+               *indices*)
+      (setf (gethash (list 'INDEX
+                           heap-id
+                           (list key value))
+                     *indices*)
+            (heap-first-index heap-id key value start-index))))
 
 
 
@@ -588,7 +630,8 @@
 ;;; Clear all the hash tables related to the Prim's algorithm
 (defun prim-reset (heap-id)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) heap-id)
+               (declare (ignore v))
+               (cond ((equal k heap-id)
                       (remhash k *heaps*))))
            *heaps*)
   (maphash #'(lambda (k v)
