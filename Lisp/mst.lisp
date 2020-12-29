@@ -104,25 +104,6 @@
 ;;; The arcs elements of the list are rapresented with the following form:
 ;;; (arc graph-id vertex-id vertex-neighbor weight)
 ;;; Note that the implementation assumes a non oriented graph.
-<<<<<<< HEAD
-=======
-(defun graph-vertex-neighbors-vecchio (graph-id vertex-id)
-  (remove nil
-          (mapcar #'(lambda (arc)
-                      (cond ((equal (third arc) vertex-id)
-                             arc)
-                            ((equal (fourth arc) vertex-id)
-                             (list 'ARC
-                                   graph-id
-                                   vertex-id
-                                   (third arc)
-                                   (fifth arc)))
-                            (T nil)))
-                  (graph-arcs graph-id))))
-
-
-
->>>>>>> eba3519 (Introduced sensible heap's indices caching, uniformed 80 columns indentation)
 (defun graph-vertex-neighbors (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (u)
@@ -300,9 +281,7 @@
          (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
                      (heap-size (gethash heap-id *heaps*)))
                (list inf v))
-         (setf (gethash (list 'INDEX
-                              (heap-actual-heap (gethash heap-id *heaps*))
-                              (list k v))
+         (setf (gethash (list 'INDEX heap-id (list k v))
                         *indices*)
                (heap-size (gethash heap-id *heaps*)))
          (setf (gethash heap-id *heaps*)
@@ -310,12 +289,7 @@
                      heap-id
                      (+ (heap-size (gethash heap-id *heaps*)) 1)
                      (heap-actual-heap (gethash heap-id *heaps*))))
-<<<<<<< HEAD
-
          (heap-decrease-key heap-id
-=======
-         (heap-decrease-key (heap-actual-heap (gethash heap-id *heaps*))
->>>>>>> eba3519 (Introduced sensible heap's indices caching, uniformed 80 columns indentation)
                             (- (heap-size (gethash heap-id *heaps*)) 1)
                             k))
         (T (error "HEAP FULL ERROR"))))
@@ -332,32 +306,27 @@
 ;;;         switch A[i] with A[Parent(i)]
 ;;;         i = Parent(i)
 ;;;
-<<<<<<< HEAD
 (defun heap-decrease-key (heap-id i k)
   (cond ((>= (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
              k)
-         (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
-               (list k
-                     (second (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                   i))))
-         (heap-decrease-key-shift-up heap-id i))
-=======
-(defun heap-decrease-key (actual-heap i k)
-  (cond ((>= (first (aref actual-heap i))
-             k)
          (remhash (list 'INDEX
-                        actual-heap
-                        (aref actual-heap i))
+                        heap-id
+                        (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
                   *indices*)
          (setf (gethash (list 'INDEX
-                              actual-heap
-                              (list k (second (aref actual-heap i))))
+                              heap-id
+                              (list k
+                                    (second (aref (heap-actual-heap (gethash
+                                                                     heap-id
+                                                                     *heaps*))
+                                                  i))))
                         *indices*)
                i)
-         (setf (aref actual-heap i)
-               (list k (second (aref actual-heap i))))
-         (heap-decrease-key-shift-up actual-heap i))
->>>>>>> eba3519 (Introduced sensible heap's indices caching, uniformed 80 columns indentation)
+         (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
+               (list k (second (aref (heap-actual-heap (gethash heap-id
+                                                                *heaps*))
+                                     i))))
+         (heap-decrease-key-shift-up heap-id i))
         (T (error "THE NEW KEY IS GREATER"))))
 
 
@@ -376,25 +345,15 @@
 
 
 
-<<<<<<< HEAD
 ;;; Switch the the entry in position i in the heap identified
 ;;; by heap-id with the one on position j and vice versa.
 (defun heap-switch (heap-id i j)
   (let ((vi (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
         (vj (aref (heap-actual-heap (gethash heap-id *heaps*)) j)))
     (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i) vj)
-    (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) j) vi)))
-=======
-;;; Switch the the entry in position i in an array arr With the one on position
-;;; j and vice versa.
-(defun aswitch (arr i j)
-  (let ((vi (aref arr i))
-        (vj (aref arr j)))
-    (setf (aref arr i) vj)
-    (setf (aref arr j) vi)
-    (setf (gethash (list 'INDEX arr vi) *indices*) j)
-    (setf (gethash (list 'INDEX arr vj) *indices*) i)))
->>>>>>> eba3519 (Introduced sensible heap's indices caching, uniformed 80 columns indentation)
+    (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) j) vi)
+    (setf (gethash (list 'INDEX heap-id vi) *indices*) j)
+    (setf (gethash (list 'INDEX heap-id vj) *indices*) i)))
 
 
 
@@ -417,23 +376,14 @@
                        heap-id
                        (- (heap-size (gethash heap-id *heaps*)) 1)
                        (heap-actual-heap (gethash heap-id *heaps*))))
-<<<<<<< HEAD
-           (heap-switch heap-id
-                        0
-                        (heap-size (gethash heap-id *heaps*)))
-=======
-           (aswitch (heap-actual-heap (gethash heap-id *heaps*))
-                    0
-                    (heap-size (gethash heap-id *heaps*)))
+           (heap-switch heap-id 0 (heap-size (gethash heap-id *heaps*)))
            (remhash (list 'INDEX
-                          (heap-actual-heap (gethash heap-id
-                                                     *heaps*))
+                          heap-id
                           (aref (heap-actual-heap (gethash heap-id
                                                            *heaps*))
                                 (heap-size (gethash heap-id
                                                     *heaps*))))
                     *indices*)
->>>>>>> eba3519 (Introduced sensible heap's indices caching, uniformed 80 columns indentation)
            (heapify heap-id 0)
            (car (cons (aref (heap-actual-heap (gethash heap-id *heaps*))
                             (heap-size (gethash heap-id *heaps*)))
@@ -572,7 +522,7 @@
                                                          *vertex-keys*))))
                                 (heap-decrease-key
                                  graph-id
-                                 (heap-first-index
+                                 (hashed-heap-first-index
                                   graph-id
                                   (fourth (gethash (list 'VERTEX-KEY
                                                          graph-id
@@ -634,14 +584,14 @@
 ;;; the heap
 (defun hashed-heap-first-index (heap-id key value start-index)
   (or (gethash (list 'INDEX
-                      (heap-actual-heap (gethash heap-id *heaps*))
-                      (list key value))
+                     heap-id
+                     (list key value))
                *indices*)
-       (setf (gethash (list 'INDEX
-                            (heap-actual-heap (gethash heap-id *heaps*))
-                            (list key value))
-                      *indices*)
-             (heap-first-index heap-id key value start-index))))
+      (setf (gethash (list 'INDEX
+                           heap-id
+                           (list key value))
+                     *indices*)
+            (heap-first-index heap-id key value start-index))))
 
 
 
