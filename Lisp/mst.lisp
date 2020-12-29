@@ -32,20 +32,25 @@
 
 ;;; Delete the entire graph with all its arcs and vertices from the hash table.
 (defun delete-graph (graph-id)
+  (remhash graph-id *graphs*)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) graph-id) (remhash k *vertices*))))
+               (cond ((equal (second v) graph-id)
+                      (remhash k *vertices*))))
            *vertices*)
   (maphash #'(lambda (k v)
-               (cond ((equal (second v) graph-id) (remhash k *arcs*))))
+               (cond ((equal (second v) graph-id)
+                      (remhash k *arcs*))))
            *arcs*))
 
 
 
 ;;; Create a new vertex in the given graph.
 (defun new-vertex (graph-id vertex-id)
-  (setf (gethash (list 'vertex graph-id vertex-id)
-                 *vertices*)
-        (list 'vertex graph-id vertex-id)))
+  (cond ((is-graph graph-id)
+         (setf (gethash (list 'vertex graph-id vertex-id)
+                        *vertices*)
+               (list 'vertex graph-id vertex-id)))
+        (T nil)))
 
 
 
@@ -230,7 +235,9 @@
 
 
 (defun heap-delete (heap-id)
-  (remhash heap-id *heaps*))
+  (cond ((gethash heap-id *heaps*)
+         (remhash heap-id *heaps*))
+        (T (error "NOT A HEAP"))))
 
 
 
@@ -294,16 +301,11 @@
 ;;;         i = Parent(i)
 ;;;
 (defun heap-decrease-key (heap-id i k)
-  (cond ((>= (first (aref (heap-actual-heap (gethash heap-id
-                                                     *heaps*))
-                          i))
+  (cond ((>= (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
              k)
-         (setf (aref (heap-actual-heap (gethash heap-id
-                                                *heaps*))
-                     i)
+         (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
                (list k
-                     (second (aref (heap-actual-heap (gethash heap-id
-                                                              *heaps*))
+                     (second (aref (heap-actual-heap (gethash heap-id *heaps*))
                                    i))))
          (heap-decrease-key-shift-up heap-id i))
         (T (error "THE NEW KEY IS GREATER"))))
@@ -327,18 +329,10 @@
 ;;; Switch the the entry in position i in the heap identified
 ;;; by heap-id with the one on position j and vice versa.
 (defun heap-switch (heap-id i j)
-  (let ((vi (aref (heap-actual-heap (gethash heap-id
-                                             *heaps*))
-                  i))
-        (vj (aref (heap-actual-heap (gethash heap-id
-                                             *heaps*))
-                  j)))
-    (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
-                i)
-          vj)
-    (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
-                j)
-          vi)))
+  (let ((vi (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
+        (vj (aref (heap-actual-heap (gethash heap-id *heaps*)) j)))
+    (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i) vj)
+    (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) j) vi)))
 
 
 
@@ -389,27 +383,22 @@
 ;;;
 (defun heapify (heap-id i)
   (let ((l (+ (* i 2) 1))
-        (r (+ (* i 2) 2)))
-    (cond ((and (< l (heap-size (gethash heap-id *heaps*)))
-                (< (first (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                l))
-                   (first (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                i))))
+        (r (+ (* i 2) 2))
+        (heap-rep (gethash heap-id *heaps*)))
+    (cond ((and (< l (heap-size heap-rep))
+                (< (first (aref (heap-actual-heap heap-rep) l))
+                   (first (aref (heap-actual-heap heap-rep) i))))
            (cond ((and
-                   (< r (heap-size (gethash heap-id *heaps*)))
-                   (< (first (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                   r))
-                      (first (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                   l))))
+                   (< r (heap-size heap-rep))
+                   (< (first (aref (heap-actual-heap heap-rep) r))
+                      (first (aref (heap-actual-heap heap-rep) l))))
                   (heap-switch heap-id i r)
                   (heapify heap-id r))
                  (T (heap-switch heap-id i l)
                     (heapify heap-id l))))
           ((and (< r (heap-size heap-rep))
-                (< (first (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                r))
-                   (first (aref (heap-actual-heap (gethash heap-id *heaps*))
-                                i))))
+                (< (first (aref (heap-actual-heap heap-rep) r))
+                   (first (aref (heap-actual-heap heap-rep) i))))
            (heap-switch heap-id i r)
            (heapify heap-id r)))))
 
@@ -564,8 +553,6 @@
 
 
 
-
-
 ;;; Return the MST graph following a preorder visit, arcs with equal weights are
 ;;; lexicographically ordered.
 (defun mst-get (graph-id source-id)
@@ -601,9 +588,8 @@
 ;;; Clear all the hash tables related to the Prim's algorithm
 (defun prim-reset (heap-id)
   (maphash #'(lambda (k v)
-               (declare (ignore k))
                (cond ((equal (second v) heap-id)
-                      (remhash v *heaps*))))
+                      (remhash k *heaps*))))
            *heaps*)
   (maphash #'(lambda (k v)
                (cond ((equal (second v) heap-id)
