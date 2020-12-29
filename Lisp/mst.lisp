@@ -130,27 +130,6 @@
 
 
 
-;; PLACEHOLDER while waiting for updated specifics.
-;; How at least one of the two neighbors function should look like.
-(defun fixed-graph-vertex-adjacent (graph-id vertex-id)
-  (remove nil
-          (mapcar #'(lambda (u)
-                      (cond ((or (gethash (list 'ARC
-                                                graph-id
-                                                vertex-id
-                                                (third u))
-                                          *arcs*)
-                                 (gethash (list 'ARC
-                                                graph-id
-                                                (third u)
-                                                vertex-id)
-                                          *arcs*))
-                             (list 'VERTEX graph-id (third u)))
-                            (T nil)))
-                  (graph-vertices graph-id))))
-
-
-
 ;;; Return a list containing all the vertices reachables from v, these
 ;;; connections are rapresented by arcs in the form:
 ;;; (arc graph-id vertex-id vertex-neighbor)
@@ -168,10 +147,7 @@
                                                 (third u)
                                                 vertex-id)
                                           *arcs*))
-                             (list 'ARC
-                                   graph-id
-                                   vertex-id
-                                   (third u)))
+                             (list 'VERTEX graph-id (third u)))
                             (T nil)))
                   (graph-vertices graph-id))))
 
