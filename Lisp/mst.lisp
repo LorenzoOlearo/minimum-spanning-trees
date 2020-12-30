@@ -32,7 +32,8 @@
 
 
 
-;;; Delete the entire graph with all its arcs and vertices from the hash table.
+;;; Delete the entire graph with all its arcs and vertices from the hash
+;;; table.
 (defun delete-graph (graph-id)
   (remhash graph-id *graphs*)
   (maphash #'(lambda (k v)
@@ -87,7 +88,8 @@
 
 
 
-;;; Return a list containing all the arcs between two vertices in a given graph.
+;;; Return a list containing all the arcs between two vertices in a given
+;;; graph.
 (defun graph-arcs (graph-id)
   (let ((acc ()))
     (maphash #'(lambda (key val)
@@ -428,7 +430,10 @@
 
 ;;; Return the weight of the arc connecting vertex-id to the MST.
 (defun mst-vertex-key (graph-id vertex-id)
-  (let ((record (gethash (list 'VERTEX-KEY graph-id vertex-id) *vertex-keys*)))
+  (let ((record (gethash (list 'VERTEX-KEY
+                               graph-id
+                               vertex-id)
+                         *vertex-keys*)))
     (cond (record
            (fourth record))
           (T inf))))
@@ -444,8 +449,8 @@
 
 
 
-;;; Executes the Prim's algorithm by adding in the hash tables *vertex-keys* and
-;;; *previous* the respective elements.
+;;; Executes the Prim's algorithm by adding in the hash tables *vertex-keys*
+;;; and *previous* the respective elements.
 (defun mst-prim (graph-id source-id)
   (prim-reset graph-id)
   (cond ((has-vertex graph-id source-id)
@@ -483,7 +488,8 @@
   (defun mst-prim-recurse (graph-id)
     (cond ((heap-not-empty graph-id)
            (let ((minimum (heap-extract graph-id)))
-             (setf (gethash (list 'VISITED graph-id (second minimum)) *visited*)
+             (setf (gethash (list 'VISITED graph-id (second minimum))
+                            *visited*)
                    (list 'VERTEX graph-id (second minimum)))
              (mapcar #'(lambda (arc)
                          (cond ((and (equal (gethash (list 'VISITED
@@ -571,8 +577,8 @@
 
 
 
-;;; Return the MST graph following a preorder visit, arcs with equal weights are
-;;; lexicographically ordered.
+;;; Return the MST graph following a preorder visit, arcs with equal weights
+;;; are lexicographically ordered.
 (defun mst-get (graph-id source-id)
   (mapcan #'(lambda (arc)
               (append (list arc) (mst-get graph-id (third arc))))
@@ -580,8 +586,8 @@
 
 
 
-;;; Create a list of arcs from the hash tables *vertex-keys* and *previous* that
-;;; the function mst-prim has populated.
+;;; Create a list of arcs from the hash tables *vertex-keys* and *previous*
+;;; that the function mst-prim has populated.
 (defun get-prim-arcs (graph-id source-id)
   (let ((acc ()))
     (maphash #'(lambda (k v)
@@ -597,8 +603,9 @@
                        (T nil)))
              *previous*)
     (stable-sort (stable-sort acc
-                              #'STRING< :KEY #'(lambda (arc)
-                                                 (write-to-string (third arc))))
+                              #'STRING< :KEY
+                              #'(lambda (arc)
+                                  (write-to-string (third arc))))
                  #'< :KEY #'FOURTH)))
 
 
@@ -633,7 +640,7 @@
 
 
 
-;;; Creates a graph reading arcs from a file or adds the arcs to the graph
+;;; Create a graph reading arcs from a file or adds the arcs to the graph
 ;;; if already exixsting
 (defun read-graph (graph-id file-name)
   (new-graph graph-id)

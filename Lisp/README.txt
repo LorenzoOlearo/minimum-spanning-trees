@@ -5,8 +5,8 @@ problema MST.
   * Lorenzo Olearo, matricola ------
   * Alessandro Riva, matricola ------
 
-- L'intera API, contenente l'implementazione di grafi, heaps e dell'algoritmo di
-  Prim, descritta nella consegna è contenuta nel file "mst.lisp".
+- L'intera API, contenente l'implementazione di grafi, heaps e dell'algoritmo
+  di Prim, descritta nella consegna è contenuta nel file "mst.lisp".
 
 - Caricamento della API da interprete:
   CL-USER> (load "path/to/file.lisp")
@@ -20,12 +20,12 @@ problema MST.
 - Il codice allegato è stato indentato come richiesto da Emacs su 80 colonne.
 
 - Allo scadere del termine ultimo per la consegna, il repository GitHub in cui
-  il progetto è stato sviluppato sarà reso pubblicamente disponibile al seguente
-  link: https://github.com/LorenzoOlearo/minimum-spanning-trees/
+  il progetto è stato sviluppato sarà reso pubblicamente disponibile al
+  seguente link: https://github.com/LorenzoOlearo/minimum-spanning-trees/
 
 
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 
 

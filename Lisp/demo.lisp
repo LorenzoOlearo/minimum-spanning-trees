@@ -46,7 +46,7 @@
 
 
 ;;; Demo function for primkiller graphs.
-;;; For each arc add the corresponding vertices.
+;;; Create a new graph and for each arc add the corresponding vertices.
 (defun demo-new-arc (graph-id v u &optional (weight 1))
   (new-graph graph-id)
   (new-vertex graph-id v)
