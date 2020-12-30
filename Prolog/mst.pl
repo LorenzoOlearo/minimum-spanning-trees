@@ -64,8 +64,8 @@ delete_graph(G) :-
 
 %!	new_vertex(+Graph:graph, +Vertex:term) is semidet
 %
-%	Predicate that asserts a vertex/2 that associates Graph with Vertex if not
-%	already associated <br>
+%	Predicate that asserts a vertex/2 that associates Graph with Vertex if
+%	not already associated <br>
 %	The predicate is false if Graph is not a graph, else is true
 %
 %	@arg Graph graph object of the action
@@ -86,8 +86,8 @@ new_vertex(G, V) :-
 %	The predicate is false if Graph is not a graph
 %
 %	@arg Graph graph object of the action
-%	@arg Vertices list of vertex/2 associated with Graph, empty if Graph is an
-%		empty graph
+%	@arg Vertices list of vertex/2 associated with Graph, empty if Graph is
+%		an empty graph
 
 graph_vertices(G, Vs) :-
 	graph(G),
@@ -147,27 +147,29 @@ new_arc(G, U, V) :- new_arc(G, U, V, 1).
 %	The predicate is false when Graph is not a graph
 %
 %	@arg Graph graph object of the action
-%	@arg Arcs list of arc/4 associated with Graph, empty if Graph is an empty
-%		graph
+%	@arg Arcs list of arc/4 associated with Graph, empty if Graph is an
+%		empty graph
 
 graph_arcs(G, Arcs) :-
 	graph(G),
 	findall(arc(G, V, U, W), arc(G, V, U, W), Arcs).
 
 
-%!	vertex_neighbors(+Graph:graph, +Vertex:vertex, -Neighbors:list) is semidet
+%!	vertex_neighbors(+Graph:graph, +Vertex:vertex, -Neighbors:list)
+%!	is semidet
 %
 %	Predicate that is true when Neighbors is the list of all the arc/4 that
 %	are incident to Vertex <br>
 %	The predicate is false when Vertex is not a vertex associated with
-%	 Graph <br>
+%	Graph <br>
 %	This predicate is to be used in an undirected graph context
 %
 %	@arg Graph graph object of the action
 %	@arg Vertex end-point of the arcs in Neighbors
-%	@arg Neighbors list of arc/4 that are incident to Vertex, with the oreder
-% 		of the arguments arranged to have Vertex as the second argument
-%		regardless of the order they are arranged in the knowledge base
+%	@arg Neighbors list of arc/4 that are incident to Vertex, with the
+%		oreder of the arguments arranged to have Vertex as the second
+%		argument regardless of the order they are arranged in the knowledge
+%		base
 
 vertex_neighbors(G, V, Neighbors) :-
 	vertex(G, V),
@@ -220,8 +222,8 @@ adjs(G, V, Vs) :-
 %
 %	@arg Graph graph object of the action
 %	@arg Vertex vertex the arcs in Adjacents are joined to
-%	@arg Adjacents list of vertex/2 that are head of an arc having Vertex as
-%		tail
+%	@arg Adjacents list of vertex/2 that are head of an arc having Vertex
+%		as tail
 
 adjs_oriented(G, V, Vs) :-
 	vertex(G, V),
@@ -345,10 +347,11 @@ write_arcs_in_rows([Arc | Arcs], [Row | Rows]) :-
 heap/2,
 
 
-%!	heap_entry(+Heap:heap, -Position:number, +Key:number, -Value:term) is nondet
+%!	heap_entry(+Heap:heap, -Position:number, +Key:number, -Value:term)
+%!	is nondet
 %
-%	Predicate that is true when Value is stored in the heap Heap with key Key
-%	and in position Position in the array representing the heap
+%	Predicate that is true when Value is stored in the heap Heap with key
+%	Key and in position Position in the array representing the heap
 
 heap_entry/4.
 
@@ -369,7 +372,7 @@ new_heap(H) :- assert(heap(H, 0)), !.
 
 %!	delete_heap(+Heap:heap) is det
 %
-%	Predicate that retracts heap/1 and all heap_entry/4 associated with
+%	Predicate that retracts heap/2 and all heap_entry/4 associated with
 %	Heap<br>
 %	This predicate is always true
 %
@@ -429,8 +432,8 @@ heap_head(H, K, V) :-
 %
 %	Predicate that is true when Key, Value are key and value of the head
 %	of the heap Heap<br>
-%	This predicate changes the knowledge base removing the head from the heap
-%	and restructuring the heap to mantain the heap property
+%	This predicate changes the knowledge base removing the head from the
+%	heap and restructuring the heap to mantain the heap property
 %
 %	@arg Heap heap object of the action
 %	@arg Key key of the head of the heap
@@ -455,12 +458,13 @@ heap_extract(H, K, V) :-
 	heapify(H, 1).
 
 
-%!	heap_decrease_key(+Heap:heap, +Position:number, +NewKey:number) is semidet
+%!	heap_decrease_key(+Heap:heap, +Position:number, +NewKey:number)
+%!	is semidet
 %
 %	Support predicate for heap operations<br>
-%	Predicate that changes the key of the heap_entry/4 with position Position
-%	and moves it to a new position according to NewKey if NewKey is lesser
-%	then the preexisting key, else the predicate fails
+%	Predicate that changes the key of the heap_entry/4 with position
+%	Position and moves it to a new position according to NewKey if NewKey
+%	is lesser then the preexisting key, else the predicate fails
 %
 %	@arg Heap heap object of the action
 %	@arg Position index of the heap array indexing the heap_entry/4
@@ -481,8 +485,8 @@ heap_decrease_key(H, OldKey, NewKey, V) :-
 %!	heap_move_up(+Heap:heap, +Position:number) is semidet
 %
 %	Support predicate for heap operations<br>
-%	Predicate that moves a heap_entry/4, in a heap Heap at position Position,
-%	up until needed according to its key
+%	Predicate that moves a heap_entry/4, in a heap Heap at position
+%	Position, up until needed according to its key
 %
 %	@arg Heap heap object of the action
 %	@arg Position index of the heap array indexing the heap_entry/4
@@ -508,9 +512,10 @@ heap_move_up(H, P) :-
 
 %!	heap_insert(+Heap:heap, +Key:number, +Value:term) is semidet
 %
-%	Predicate that asserts a new heap_entry/4 with key Key and value Value<br>
-%	This predicate changes the knowledge base adding the new heap_entry/4 in
-%	the heap and restructuring the heap to mantain the heap property
+%	Predicate that asserts a new heap_entry/4 with key Key and value
+%	Value<br>
+%	This predicate changes the knowledge base adding the new heap_entry/4
+%	in the heap and restructuring the heap to mantain the heap property
 %
 %	@arg Heap heap object of the action
 %	@arg Key the key of the new heap_entry/4
@@ -525,11 +530,10 @@ heap_insert(H, K, V) :-
 	heap_move_up(H, NewS).
 
 
-
 %!	heapify(+Heap:heap, +Position:number) is semidet
 %
-%	Predicate that restructures the heap taking for granted the two subtrees
-%	from P are already heaps
+%	Predicate that restructures the heap taking for granted the two
+%	subtrees from P are already heaps
 %
 %	@arg Heap heap object of the action
 %	@arg Position index of the heap array to heapify
@@ -584,7 +588,6 @@ heapify(H, P) :-
 	heapify_on_different(H, Min, P).
 
 
-
 %!	heapify_on_different(+Heap:heap, +To_heapify:number, +Position:number)
 %!	is semidet
 %
@@ -605,7 +608,6 @@ heapify_on_different(H, Min, P) :-
 	heapify(H, Min).
 
 
-
 %	min_key([+Key1:number, +Position1:number],
 %!			[+Key2:number, +Position2:number]
 %!			[-KeyMin:number, -PositionMin:number]) is det
@@ -619,7 +621,8 @@ min_key([K1, P1], [K2, _], [K1, P1]) :- K1 =< K2, !.
 min_key([K1, _], [K2, P2], [K2, P2]) :- K1 > K2, !.
 
 
-%!	heap_switch(+Heap:heap, +Position1:number, +Position2:number) is semidet
+%!	heap_switch(+Heap:heap, +Position1:number, +Position2:number)
+%!	is semidet
 %
 %	Support predicate for heap operations<br>
 %	Predicate that switches positions in Heap
@@ -645,13 +648,13 @@ heap_switch(H, P1, P2) :-
 %!	modify_key(+Heap:heap, +NewKey:number, +OldKey:number, +Value:term)
 %!	is nondet
 %
-%	Predicate replaces the a heap_entry with key OldKey and value Value with
-%	one with NewKey as key and the same Value<br>
+%	Predicate replaces the a heap_entry with key OldKey and value Value
+%	with one with NewKey as key and the same Value<br>
 %	This predicate changes the knowledge base changing the heap_entry/4 in
 %	the heap and restructuring the heap to mantain the heap property<br>
 %	This predicate is meant for a context with unique couple {key, value},
-%	else it is expected to work fine and change all the unifing heap_entry/4
-%	but the feature is untested<br>
+%	else it is expected to work fine and change all the unifing
+%	heap_entry/4 but the feature is untested<br>
 %	This predicate is meant to be used only for NewKey > OldKey for
 %	heap_decrease_key/3 is way more efficient in NewKey =< OldKey use case
 %
@@ -664,7 +667,6 @@ modify_key(H, NewKey, OldKey, V) :-
 	heap_decrease_key(H, OldKey, -inf, V),
 	heap_extract(H, -inf, V),
 	heap_insert(H, NewKey, V).
-
 
 
 %!	list_heap(+Heap:heap) is semidet
@@ -683,8 +685,8 @@ list_heap(H) :-
 
 %!	heap_contains(+Heap:heap, +Key:number, +Value:term) is semidet
 %
-%	Predicate that is true when the heap Heap contains the heap_entry/4 with
-%	key Key and value Value
+%	Predicate that is true when the heap Heap contains the heap_entry/4
+%	with key Key and value Value
 %
 %	@arg Heap heap object of the action
 %	@arg Key key of the heap_entry/4
@@ -697,19 +699,53 @@ heap_contains(H, K, V) :-
 
 % Informs the interpreter that the definition of the predicates may change
 % during execution (using assert/1 and/or retract/1).
-:- dynamic vertex_key/3, vertex_previous/3.
+:- dynamic
+
+%!	vertex_key(+Graph:graph, +Vertex:vertex, +Weight:number)
+%
+%	predicate that represents the evaluation of the cost to reach a vertex
+%	according to the Prim's algorithm
+%
+%	@arg Graph the graph containing Vertex
+%	@arg Vertex the name of the evaluated vertex
+%	@arg Weight the cost associeated to the vertex
+
+vertex_key/3,
 
 
+%!	vertex_previous(+Graph:graph, +Vertex:vertex, +Previous:vertex)
+%
+%	predicate that represents the previous vertex needed to reach a vertex
+%	Vertex according to the Prim's algorithm
+%
+%	@arg Graph the graph containing Vertex and Previous
+%	@arg Vertex the name of the evaluated vertex
+%	@arg Previous the vertex to witch Vertex is connected
 
-% For each vertex V in the graph G the predicate mst_prim/2 will add in the
-% knowledge base the predicates vertex_key(G, V, K) and
-% vertex_previous(G, V, K) representing a solution to the MST problem.
+vertex_previous/3.
+
+
+%!	mst_prim(+Graph:graph, +Source:vertex) is semidet
+%
+%	Predicate that determines the minimum spanning tree of a graph Graph
+%	using Source as start vertex for Prim's algorithm<br>
+%	This predicate asserts vertex_key/3 and vertex_previous/3 describing
+%	the mst
+%
+%	@arg Graph the graph object of the action
+%	@arg Source the starting vertex for Prim's algorithm
 
 mst_prim(G, Source) :-
 	mst_reset(G),
 	graph_vertices(G, Vs),
 	init(G, G, Vs, Source),
 	mst_prim(G).
+
+
+%!	mst_prim(+Graph:graph) is semidet
+%
+%	Support predicate for mst_prim/2<br>
+%	Predicate that solves the Prim's algorithm after intialization init/4
 
 mst_prim(G) :-
 	heap_has_size(G, S),
@@ -724,19 +760,34 @@ mst_prim(G) :-
 	mst_prim(G).
 
 
-
-% mst_get/3
-
-% mst_get/3
+%!	mst_get(+Graph:graph, +Source:vertex, -PreorderTree:list) is semidet
+%
+%	Predicate that is true when PreorderTree is the list of arc/4
+%	composing the minimum spanning tree of the graph Graph starting from
+%	Source<br>
+%	This predicate is supposed to be called after mst_prim(Graph, Source)
+%	for it's based on its assertions, notice that the Source vertex has to
+%	be the same to avoid unexpected behaviour
+%
+%	@arg Graph the graph object of the action
+%	@arc Source the starting vertex for Prim's algorithm
+%	@arg PreorderTree arc/4 enocuntered during a preoder visit of the tree
 
 mst_get(G, Source, PreorderTree) :-
 	mst_get_neighbors(G, Source, Neighbors),
 	mst_get_recurse(Neighbors, PreorderTree).
 
 
-
-% mst_get_neighbors/3 support predicate for mst_get/3 could be incorporated in
-% mst_get/3
+%!	mst_get_neighbors(+Graph:graph, +Source:vertex, -Neighbors:list)
+%!	is semidet
+%
+%	Support predicate for mst_get/3<br>
+%	Predicate that finds the list Neighbors arc/4 of a Source vertex
+%	according to the minimum spanning tree of the graph Graph
+%
+%	@arg Graph the graph object of the action
+%	@arg Source the vertex object of the action
+%	@arg	Neighbors list of neighbors arc/4 of Source
 
 mst_get_neighbors(G, Source, WSort) :-
 	findall([G, Source, V, W] , (vertex_previous(G, V, Source),
@@ -749,8 +800,14 @@ mst_get_neighbors(G, Source, WSort) :-
 	sort(4, @=<, VSort, WSort).
 
 
-
-% build_arcs_from_list/2
+%!	build_arcs_from_list(+List:list, -Arcs:list) is semidet
+%
+%	Support predicate for graph operations
+%	Predicate that is true when each element [G, V, U, W] of List
+%	corresponds to an arc(G, V, U, W) with the same position in Arcs
+%
+%	@arg List list of [G, V, U, W] arguments of arc/4
+%	@arg	Arcs list of composed arc/4
 
 build_arcs_from_list([], []) :- !.
 build_arcs_from_list([Arg | Args], [Arc | Arcs]) :-
@@ -758,9 +815,15 @@ build_arcs_from_list([Arg | Args], [Arc | Arcs]) :-
 	build_arcs_from_list(Args, Arcs).
 
 
-
-% mst_get_recurse/2 support predicate for mst_get, calls mst_get for all the
-% adjacent nodes of Source given in as fouth argument
+%!	mst_get_recurse(+Arcs:list, -PreorderTree:list) is semidet
+%
+%	Support predicate for mst_get/3<br>
+%	Predicate that is true when PreorderTree is the list of arc/4 visited
+%	in the minimum spanning tree in a preorder visit, with Arcs being
+%	the neighbors arcs
+%
+%	@arg Arcs list of arc/4
+%	@arg PreorderTree arc/4 enocuntered during a preoder visit of the tree
 
 mst_get_recurse([], []) :- !.
 
@@ -770,11 +833,19 @@ mst_get_recurse([arc(G, S, V, W) | Ns], [arc(G, S, V, W) | MST]) :-
 	append(Tree, Rest, MST).
 
 
-
-% The support predicate init/4 initializes the heap H for the Prim's algorithm,
-% takes a list containing all the vertices [V | Vs] and inserts each one of them
-% as a heap entry for the heap H, when these entries are first added their key
-% value is set to inf
+%!	init(+Heap:term, +Graph:graph, +Vertices:list, +Source:vertex)
+%!	is semidet
+%
+%	Support predicate for mst_prim/2<br>
+%	Predicate that initializes Heap as a heap for the Prim's algorithm,
+%	with a list Vertices containing all the vertex/2 of a graph Graph<br>
+%	This predicate asserts a heap_entry/4 for each vertex assigning inf as
+%	key except for the Source vertex which is given key 0
+%
+%	@arg	Heap term to be asserted as heap/2
+%	@arg	Graph the graph object of the action
+%	@arg Vertices list of vertex/2 in Graph
+%	@arg Source starting vertex for Prim's algorithm
 
 init(H, G, [], Source) :-
 	!,
@@ -793,12 +864,18 @@ init(H, G, [V | Vs], Source) :-
 	init(H, G, Vs, Source).
 
 
-
-% The support predicate update_keys/3 takes a list of arcs [N | Ns] in the graph
-% G directed from the vertex Source to V, for each of the neighbors vertices of
-% Source, the predicate will update their respective key to the weight W of that
-% specific arc, if there is no connection between the two vertices the
-% respective key in the heap entry will remains set to inf.
+%!	update_keys(+Heap:heap, +Arcs:list) is semidet
+%
+%	Support predicate for mst_prim/2<br>
+%	Predicate that takes a list of arc/4 Arcs with a common head in the
+%	graph Graph and asserts a new vertex_key/3, retracting a
+%	pre-exisisting one, for each arc/4 in arcs if the weight of the arc/4
+%	is less than the one in the existing vertex_key/3 and if the
+%	vertex_key/3 is still in the heap Heap<br>
+%	The predicate also updates the key in the heap
+%
+%	@arg Heap the heap containing the verices
+%	@arg Arcs list of arcs used to update the keys
 
 update_keys(_, []) :- !.
 
@@ -823,8 +900,13 @@ update_keys(H, [_ | Ns]) :-
 	update_keys(H, Ns).
 
 
-
-% mst_reset/1
+%!	mst_reset(+Graph:graph) is semidet
+%
+%	Predicate that retracts all data asserted by a mst_prim/2<br>
+%	This predicate retracts all vertex_key/3, vertex_previous/3 and
+%	deletes the heap
+%
+%	@arg Graph the graph object of the action
 
 mst_reset(G) :-
 	graph(G),
