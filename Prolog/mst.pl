@@ -277,7 +277,25 @@ list_graph(G) :-
 %	@arg FileName the path of the input csv file
 
 read_graph(G, FileName) :-
-	csv_read_file(FileName, Rows, [separator(0'\t)]),
+	read_graph(G, FileName, 0'\t).
+
+
+%!	read_graph(+Graph:graph, +FileName:path, +Separator:number) is semidet
+%
+%	Predicate that reads arc/4 of Graph from a Separator separated csv file,
+%	every arc will be written as a triple {Source Destination Weight}
+%	omitting the term representing the graph <br>
+%	Graph will be asserted as graph if not already a graph <br>
+%	Every vertex present as end-point of the arc will be asserted as
+%	vertex of Graph <br>
+%	Every arc will be asserted as arc of Graph
+%
+%	@arg Graph graph object of the action
+%	@arg FileName the path of the input csv file
+%	@arg Separator the ASCII code correspoing to the separator of the csv file
+
+read_graph(G, FileName, Separator) :-
+	csv_read_file(FileName, Rows, [separator(Separator)]),
 	new_graph_from_rows(G, Rows).
 
 
