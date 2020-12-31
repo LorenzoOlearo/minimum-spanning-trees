@@ -1,3 +1,17 @@
+;;;; -*- Mode: Lisp -*-
+
+;;;; mst.lisp --
+;;;;
+;;;; Minimum Spanning Trees
+;;;; Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
+;;;; 2020-2021
+;;;;
+;;;; Gruppo composto da:
+;;;;    Lorenzo Olearo, matricola ------
+;;;;    Alessandro Riva, matricola ------
+
+
+
 (load "demo.lisp" :if-does-not-exist nil)
 
 (defparameter *vertices* (make-hash-table :test #'equal))
@@ -565,17 +579,17 @@
                               0
                               inf)))
               (heap-insert-extended
-	       graph-id
+               graph-id
                (if (equal (third v) source-id)
                    0
-                 inf)
+                   inf)
                (list (third v)
                      (gethash (list 'INDEX
                                     graph-id
                                     (list (if (equal (third v)
                                                      source-id)
                                               0
-                                            inf)
+                                              inf)
                                           (third v)))
                               *indices*))))
           (graph-vertices graph-id)))
@@ -751,7 +765,7 @@
 (defun read-graph (graph-id file-name)
   (new-graph graph-id)
   (with-open-file (in file-name :direction :input :if-does-not-exist :error)
-                  (new-arcs-from graph-id in)))
+    (new-arcs-from graph-id in)))
 
 
 
@@ -767,3 +781,7 @@
       (new-vertex graph-id u)
       (new-arc graph-id v u w)
       (new-arcs-from graph-id  input-stream))))
+
+
+
+;;;; end of file -- mst.lisp --
