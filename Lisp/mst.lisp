@@ -513,7 +513,8 @@
 						   inf)
 						 (third arc)))
 				     *indices*)
-			    (list arc)))
+			    (list (list (fourth arc)
+					(fifth arc)))))
 	      (setf (gethash (list 'INDEX
 				   graph-id
 				   (list (if (equal (fourth arc) source-id)
@@ -528,10 +529,7 @@
 						   inf)
 						 (fourth arc)))
 				     *indices*)
-			    (list (list 'ARC
-					graph-id
-					(fourth arc)
-					(third arc)
+			    (list (list	(third arc)
 					(fifth arc))))))
 	  (graph-arcs graph-id))
   (mapcar #'(lambda (v)
@@ -572,13 +570,13 @@
 	   (mapcar #'(lambda (arc)
                        (cond ((and (equal (gethash (list 'VISITED
                                                          graph-id
-                                                         (fourth arc))
+                                                         (first arc))
                                                    *visited*)
                                           nil)
-                                   (< (fifth arc)
+                                   (< (second arc)
                                       (fourth (gethash (list 'VERTEX-KEY
                                                              graph-id
-                                                             (fourth arc))
+                                                             (first arc))
                                                        *vertex-keys*))))
                               (heap-decrease-key
                                graph-id
@@ -586,26 +584,26 @@
                                 graph-id
                                 (fourth (gethash (list 'VERTEX-KEY
                                                        graph-id
-                                                       (fourth arc))
+                                                       (first arc))
                                                  *vertex-keys*))
-                                (fourth arc)
+                                (first arc)
                                 0)
-                               (fifth arc))
+                               (second arc))
                               (setf (gethash (list 'PREVIOUS
                                                    graph-id
-                                                   (fourth arc))
+                                                   (first arc))
                                              *previous*)
                                     (list 'VERTEX
                                           graph-id
                                           (first (second minimum))))
                               (setf (gethash (list 'VERTEX-KEY
                                                    graph-id
-                                                   (fourth arc))
+                                                   (first arc))
                                              *vertex-keys*)
                                     (list 'VERTEX-KEY
                                           graph-id
-                                          (fourth arc)
-                                          (fifth arc))))
+                                          (first arc)
+                                          (second arc))))
                              (T nil)))
                    (second (second minimum))))
          (mst-prim-recurse graph-id))
