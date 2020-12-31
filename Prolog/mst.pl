@@ -1,7 +1,15 @@
 %%%% -*- Mode: Prolog -*-
 
-% Do not autoload from autoload libraries
-% autoload(explicit).
+%%%% mst.pl--
+%%%%
+%%%% Minimum Spanning Trees
+%%%% Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
+%%%% 2020-2021
+%%%%
+%%%% Gruppo composto da:
+%%%%    Lorenzo Olearo, matricola ------
+%%%%    Alessandro Riva, matricola ------
+
 
 
 % Load the Swipl's library that parses and generates CSV data
@@ -791,9 +799,9 @@ mst_get(G, Source, PreorderTree) :-
 
 mst_get_neighbors(G, Source, WSort) :-
 	findall([G, Source, V, W] , (vertex_previous(G, V, Source),
-								   arc(G, V, Source, W)), From),
+								 arc(G, V, Source, W)), From),
 	findall([G, Source, V, W], (vertex_previous(G, V, Source),
-								   arc(G, Source, V, W)), To),
+								arc(G, Source, V, W)), To),
 	append(From, To, List),
 	build_arcs_from_list(List, Arcs),
 	sort(3, @=<, Arcs, VSort),
@@ -913,3 +921,6 @@ mst_reset(G) :-
 	delete_heap(G),
 	retractall(vertex_key(G, _, _)),
 	retractall(vertex_previous(G, _, _)).
+
+
+%%%% end of file -- mst.pl--
