@@ -276,7 +276,7 @@
 ;;;     A[A.heap-size] = -inf
 ;;;     Heap-Decrease-Key(A, (A.heap-size - 1), key)
 ;;;
-(defun heap-insert (heap-id k v)
+(defun heap-insert-extended (heap-id k v)
   (let ((val (if (listp v)
                  v
                  (list v))))
@@ -301,7 +301,8 @@
                               k))
           (T (error "HEAP FULL ERROR")))))
 
-
+(defun heap-insert (heap-id k v)
+  (heap-insert-extended heap-id k (list v)))
 
 ;;; HEAP DECREASE KEY
 ;;;
@@ -422,7 +423,7 @@
 
 (defun heap-extract (heap-id)
   (let ((record (heap-extract-extended heap-id)))
-    (cons (first record)(first (second record)))))
+    (list (first record)(first (second record)))))
 
 
 
@@ -563,19 +564,20 @@
                           (if (equal (third v) source-id)
                               0
                               inf)))
-              (heap-insert graph-id
-                           (if (equal (third v) source-id)
-                               0
-                               inf)
-                           (list (third v)
-                                 (gethash (list 'INDEX
-                                                graph-id
-                                                (list (if (equal (third v)
-                                                                 source-id)
-                                                          0
-                                                          inf)
-                                                      (third v)))
-                                          *indices*))))
+              (heap-insert-extended
+	       graph-id
+               (if (equal (third v) source-id)
+                   0
+                 inf)
+               (list (third v)
+                     (gethash (list 'INDEX
+                                    graph-id
+                                    (list (if (equal (third v)
+                                                     source-id)
+                                              0
+                                            inf)
+                                          (third v)))
+                              *indices*))))
           (graph-vertices graph-id)))
 
 
