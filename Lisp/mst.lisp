@@ -1,3 +1,17 @@
+;;;; -*- Mode: Lisp -*-
+
+;;;; mst.lisp --
+;;;;
+;;;; Minimum Spanning Trees
+;;;; Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
+;;;; 2020-2021
+;;;;
+;;;; Gruppo composto da:
+;;;;    Lorenzo Olearo, matricola ------
+;;;;    Alessandro Riva, matricola ------
+
+
+
 (load "demo.lisp" :if-does-not-exist nil)
 
 (defparameter *vertices* (make-hash-table :test #'equal))
@@ -132,11 +146,9 @@
 
 
 
-;;; Return a list containing all the vertices reachables from v, these
-;;; connections are rapresented by arcs in the form:
-;;; (arc graph-id vertex-id vertex-neighbor)
-;;; Note that the implementation assumes a non oriented graph.
-(defun graph-vertex-adjacent (graph-id vertex-id)
+;; PLACEHOLDER while waiting for updated specifics.
+;; How at least one of the two neighbors function should look like.
+(defun fixed-graph-vertex-adjacent (graph-id vertex-id)
   (remove nil
           (mapcar #'(lambda (u)
                       (cond ((or (gethash (list 'ARC
@@ -155,6 +167,32 @@
 
 
 
+;;; Return a list containing all the vertices reachables from v, these
+;;; connections are rapresented by arcs in the form:
+;;; (arc graph-id vertex-id vertex-neighbor)
+;;; Note that the implementation assumes a non oriented graph.
+(defun graph-vertex-adjacent (graph-id vertex-id)
+  (remove nil
+          (mapcar #'(lambda (u)
+                      (cond ((or (gethash (list 'ARC
+                                                graph-id
+                                                vertex-id
+                                                (third u))
+                                          *arcs*)
+                                 (gethash (list 'ARC
+                                                graph-id
+                                                (third u)
+                                                vertex-id)
+                                          *arcs*))
+                             (list 'ARC
+                                   graph-id
+                                   vertex-id
+                                   (third u)))
+                            (T nil)))
+                  (graph-vertices graph-id))))
+
+
+
 ;;; Support function for graph-vertex-adjacent.
 ;;; Remove the last element from a given list.
 (defun remove-last (l)
@@ -167,9 +205,11 @@
 ;;; graph-vertices \n
 ;;; graph-arcs
 (defun graph-print (graph-id)
-  (format t "~a~%~%" graph-id)
-  (format t "~{~a~%~}~%" (graph-vertices graph-id))
-  (format t "~{~a~%~}" (graph-arcs graph-id)))
+  (cond ((is-graph graph-id)
+         (format t "~a~%~%" graph-id)
+         (format t "~{~a~%~}~%" (graph-vertices graph-id))
+         (format t "~{~a~%~}" (graph-arcs graph-id)))
+        (T nil)))
 
 
 
@@ -250,29 +290,33 @@
 ;;;     A[A.heap-size] = -inf
 ;;;     Heap-Decrease-Key(A, (A.heap-size - 1), key)
 ;;;
+(defun heap-insert-extended (heap-id k v)
+  (let ((val (if (listp v)
+                 v
+                 (list v))))
+    (cond ((and (< (heap-size (gethash heap-id *heaps*))
+                   (length (heap-actual-heap (gethash heap-id *heaps*))))
+                (equal (aref (heap-actual-heap (gethash heap-id *heaps*))
+                             (heap-size (gethash heap-id *heaps*)))
+                       nil))
+           (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
+                       (heap-size (gethash heap-id *heaps*)))
+                 (list inf val))
+           (setf (gethash (list 'INDEX heap-id (list k (first val)))
+                          *indices*)
+                 (heap-size (gethash heap-id *heaps*)))
+           (setf (gethash heap-id *heaps*)
+                 (list 'HEAP
+                       heap-id
+                       (+ (heap-size (gethash heap-id *heaps*)) 1)
+                       (heap-actual-heap (gethash heap-id *heaps*))))
+           (heap-decrease-key heap-id
+                              (- (heap-size (gethash heap-id *heaps*)) 1)
+                              k))
+          (T (error "HEAP FULL ERROR")))))
+
 (defun heap-insert (heap-id k v)
-  (cond ((and (< (heap-size (gethash heap-id *heaps*))
-                 (length (heap-actual-heap (gethash heap-id *heaps*))))
-              (equal (aref (heap-actual-heap (gethash heap-id *heaps*))
-                           (heap-size (gethash heap-id *heaps*)))
-                     nil))
-         (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
-                     (heap-size (gethash heap-id *heaps*)))
-               (list inf v))
-         (setf (gethash (list 'INDEX heap-id (list k v))
-                        *indices*)
-               (heap-size (gethash heap-id *heaps*)))
-         (setf (gethash heap-id *heaps*)
-               (list 'HEAP
-                     heap-id
-                     (+ (heap-size (gethash heap-id *heaps*)) 1)
-                     (heap-actual-heap (gethash heap-id *heaps*))))
-         (heap-decrease-key heap-id
-                            (- (heap-size (gethash heap-id *heaps*)) 1)
-                            k))
-        (T (error "HEAP FULL ERROR"))))
-
-
+  (heap-insert-extended heap-id k (list v)))
 
 ;;; HEAP DECREASE KEY
 ;;;
@@ -289,15 +333,21 @@
              k)
          (remhash (list 'INDEX
                         heap-id
-                        (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
+                        (list (first (aref (heap-actual-heap
+                                            (gethash heap-id *heaps*))
+                                           i))
+                              (first (second (aref (heap-actual-heap
+                                                    (gethash heap-id *heaps*))
+                                                   i)))))
                   *indices*)
          (setf (gethash (list 'INDEX
                               heap-id
                               (list k
-                                    (second (aref (heap-actual-heap (gethash
-                                                                     heap-id
-                                                                     *heaps*))
-                                                  i))))
+                                    (first (second (aref (heap-actual-heap
+                                                          (gethash
+                                                           heap-id
+                                                           *heaps*))
+                                                         i)))))
                         *indices*)
                i)
          (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
@@ -330,8 +380,14 @@
         (vj (aref (heap-actual-heap (gethash heap-id *heaps*)) j)))
     (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i) vj)
     (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) j) vi)
-    (setf (gethash (list 'INDEX heap-id vi) *indices*) j)
-    (setf (gethash (list 'INDEX heap-id vj) *indices*) i)))
+    (setf (gethash (list 'INDEX heap-id (list (first vi)
+                                              (first (second vi))))
+                   *indices*)
+          j)
+    (setf (gethash (list 'INDEX heap-id (list (first vj)
+                                              (first (second vj))))
+                   *indices*)
+          i)))
 
 
 
@@ -346,7 +402,7 @@
 ;;;     min-heapify(A, 0)
 ;;;     return min
 ;;;
-(defun heap-extract (heap-id)
+(defun heap-extract-extended (heap-id)
   (cond ((heap-empty heap-id)
          (error "HEAP UNDERFLOW ERROR"))
         (T (setf (gethash heap-id *heaps*)
@@ -357,10 +413,18 @@
            (heap-switch heap-id 0 (heap-size (gethash heap-id *heaps*)))
            (remhash (list 'INDEX
                           heap-id
-                          (aref (heap-actual-heap (gethash heap-id
-                                                           *heaps*))
-                                (heap-size (gethash heap-id
-                                                    *heaps*))))
+                          (list (first (aref (heap-actual-heap
+                                              (gethash heap-id
+                                                       *heaps*))
+                                             (heap-size
+                                              (gethash heap-id
+                                                       *heaps*))))
+                                (first (second (aref (heap-actual-heap
+                                                      (gethash heap-id
+                                                               *heaps*))
+                                                     (heap-size
+                                                      (gethash heap-id
+                                                               *heaps*)))))))
                     *indices*)
            (heapify heap-id 0)
            (car (cons (aref (heap-actual-heap (gethash heap-id *heaps*))
@@ -368,6 +432,12 @@
                       (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
                                   (heap-size (gethash heap-id *heaps*)))
                             nil))))))
+
+
+
+(defun heap-extract (heap-id)
+  (let ((record (heap-extract-extended heap-id)))
+    (list (first record)(first (second record)))))
 
 
 
@@ -430,9 +500,7 @@
 
 ;;; Return the weight of the arc connecting vertex-id to the MST.
 (defun mst-vertex-key (graph-id vertex-id)
-  (let ((record (gethash (list 'VERTEX-KEY
-                               graph-id
-                               vertex-id)
+  (let ((record (gethash (list 'VERTEX-KEY graph-id vertex-id)
                          *vertex-keys*)))
     (cond (record
            (fourth record))
@@ -455,83 +523,130 @@
   (prim-reset graph-id)
   (cond ((has-vertex graph-id source-id)
          (new-heap graph-id (length (graph-vertices graph-id)))
-         (mapcar #'(lambda (v)
-                     (cond ((equal (second v) graph-id)
-                            (cond ((equal (third v) source-id)
-                                   (setf (gethash (list 'VERTEX-KEY
-                                                        graph-id
-                                                        (third v))
-                                                  *vertex-keys*)
-                                         (list 'VERTEX-KEY
-                                               graph-id
-                                               (third v)
-                                               0))
-                                   (heap-insert graph-id 0 (third v)))
-                                  (T (setf (gethash (list 'VERTEX-KEY
-                                                          graph-id
-                                                          (third v))
-                                                    *vertex-keys*)
-                                           (list 'VERTEX-KEY
-                                                 graph-id
-                                                 (third v)
-                                                 inf))
-                                     (heap-insert graph-id inf (third v)))))
-                           (T nil)))
-                 (graph-vertices graph-id))
+         (mst-prim-init graph-id source-id)
          (mst-prim-recurse graph-id))
         (T (error "GRAPH MISMATCH"))))
 
 
 
+(defun mst-prim-init (graph-id source-id)
+  (mapcar #'(lambda (arc)
+              (setf (gethash (list 'INDEX
+                                   graph-id
+                                   (list (if (equal (third arc) source-id)
+                                             0
+                                             inf)
+                                         (third arc)))
+                             *indices*)
+                    (append (gethash (list 'INDEX
+                                           graph-id
+                                           (list (if (equal (third arc)
+                                                            source-id)
+                                                     0
+                                                     inf)
+                                                 (third arc)))
+                                     *indices*)
+                            (list (list (fourth arc)
+                                        (fifth arc)))))
+              (setf (gethash (list 'INDEX
+                                   graph-id
+                                   (list (if (equal (fourth arc)
+                                                    source-id)
+                                             0
+                                             inf)
+                                         (fourth arc)))
+                             *indices*)
+                    (append (gethash (list 'INDEX
+                                           graph-id
+                                           (list (if (equal (fourth arc)
+                                                            source-id)
+                                                     0
+                                                     inf)
+                                                 (fourth arc)))
+                                     *indices*)
+                            (list (list (third arc)
+                                        (fifth arc))))))
+          (graph-arcs graph-id))
+  (mapcar #'(lambda (v)
+              (setf (gethash (list 'VERTEX-KEY
+                                   graph-id
+                                   (third v))
+                             *vertex-keys*)
+                    (list 'VERTEX-KEY
+                          graph-id
+                          (third v)
+                          (if (equal (third v) source-id)
+                              0
+                              inf)))
+              (heap-insert-extended
+               graph-id
+               (if (equal (third v) source-id)
+                   0
+                   inf)
+               (list (third v)
+                     (gethash (list 'INDEX
+                                    graph-id
+                                    (list (if (equal (third v)
+                                                     source-id)
+                                              0
+                                              inf)
+                                          (third v)))
+                              *indices*))))
+          (graph-vertices graph-id)))
+
+
+
 ;;; Support function for mst-prim.
 ;;; Executes the recursively the iterating part of the algorithm.
-  (defun mst-prim-recurse (graph-id)
-    (cond ((heap-not-empty graph-id)
-           (let ((minimum (heap-extract graph-id)))
-             (setf (gethash (list 'VISITED graph-id (second minimum))
-                            *visited*)
-                   (list 'VERTEX graph-id (second minimum)))
-             (mapcar #'(lambda (arc)
-                         (cond ((and (equal (gethash (list 'VISITED
-                                                           graph-id
-                                                           (fourth arc))
-                                                     *visited*)
-                                            nil)
-                                     (< (fifth arc)
-                                        (fourth (gethash (list 'VERTEX-KEY
-                                                               graph-id
-                                                               (fourth arc))
-                                                         *vertex-keys*))))
-                                (heap-decrease-key
-                                 graph-id
-                                 (hashed-heap-first-index
-                                  graph-id
-                                  (fourth (gethash (list 'VERTEX-KEY
+(defun mst-prim-recurse (graph-id)
+  (cond ((heap-not-empty graph-id)
+         (let ((minimum (heap-extract-extended graph-id)))
+           (setf (gethash (list 'VISITED
+                                graph-id
+                                (first (second minimum)))
+                          *visited*)
+                 (list 'VERTEX graph-id (first (second minimum))))
+           (mapcar #'(lambda (arc)
+                       (cond ((and (equal (gethash (list 'VISITED
                                                          graph-id
-                                                         (fourth arc))
-                                                   *vertex-keys*))
-                                  (fourth arc)
-                                  0)
-                                 (fifth arc))
-                                (setf (gethash (list 'PREVIOUS
-                                                     graph-id
-                                                     (fourth arc))
-                                               *previous*)
-                                      (list 'VERTEX
-                                            graph-id
-                                            (second minimum)))
-                                (setf (gethash (list 'VERTEX-KEY
-                                                     graph-id
-                                                     (fourth arc))
-                                               *vertex-keys*)
-                                      (list 'VERTEX-KEY
-                                            graph-id
-                                            (fourth arc)
-                                            (fifth arc))))
-                               (T nil)))
-                     (graph-vertex-neighbors graph-id (second minimum))))
-           (mst-prim-recurse graph-id))
-          (T nil)))
+                                                         (first arc))
+                                                   *visited*)
+                                          nil)
+                                   (< (second arc)
+                                      (fourth (gethash (list 'VERTEX-KEY
+                                                             graph-id
+                                                             (first arc))
+                                                       *vertex-keys*))))
+                              (heap-decrease-key
+                               graph-id
+                               (hashed-heap-first-index
+                                graph-id
+                                (fourth (gethash (list 'VERTEX-KEY
+                                                       graph-id
+                                                       (first arc))
+                                                 *vertex-keys*))
+                                (first arc)
+                                0)
+                               (second arc))
+                              (setf (gethash (list 'PREVIOUS
+                                                   graph-id
+                                                   (first arc))
+                                             *previous*)
+                                    (list 'VERTEX
+                                          graph-id
+                                          (first (second minimum))))
+                              (setf (gethash (list 'VERTEX-KEY
+                                                   graph-id
+                                                   (first arc))
+                                             *vertex-keys*)
+                                    (list 'VERTEX-KEY
+                                          graph-id
+                                          (first arc)
+                                          (second arc))))
+                             (T nil)))
+                   (second (second minimum))))
+         (mst-prim-recurse graph-id))
+        (T nil)))
 
 
 
@@ -539,7 +654,7 @@
 ;;; Extract the array from heap-id and starting from start-index finds the
 ;;; lowest index where the element with the given value is present.
 (defun heap-first-index (heap-id key value start-index)
-  (print "test")
+  (print "miss")
   (cond ((<= (heap-size (gethash heap-id *heaps*))
              start-index)
          nil)
@@ -547,9 +662,14 @@
                          start-index))
             key)
          nil)
-        ((equal (aref (heap-actual-heap (gethash heap-id *heaps*))
-                      start-index)
-                (list key value))
+        ((and (equal (first (aref (heap-actual-heap (gethash heap-id
+                                                             *heaps*))
+                                  start-index))
+                     key)
+              (equal (second (aref (heap-actual-heap (gethash heap-id
+                                                              *heaps*))
+                                   start-index))
+                     value))
          start-index)
         (T (or (heap-first-index heap-id
                                  key
@@ -640,12 +760,12 @@
 
 
 
-;;; Create a graph reading arcs from a file or adds the arcs to the graph
+;;; Creates a graph reading arcs from a file or adds the arcs to the graph
 ;;; if already exixsting
 (defun read-graph (graph-id file-name)
   (new-graph graph-id)
   (with-open-file (in file-name :direction :input :if-does-not-exist :error)
-                  (new-arcs-from graph-id in)))
+    (new-arcs-from graph-id in)))
 
 
 
@@ -661,3 +781,7 @@
       (new-vertex graph-id u)
       (new-arc graph-id v u w)
       (new-arcs-from graph-id  input-stream))))
+
+
+
+;;;; end of file -- mst.lisp --

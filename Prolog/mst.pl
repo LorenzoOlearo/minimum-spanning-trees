@@ -1,7 +1,15 @@
 %%%% -*- Mode: Prolog -*-
 
-% Do not autoload from autoload libraries
-% autoload(explicit).
+%%%% mst.pl--
+%%%%
+%%%% Minimum Spanning Trees
+%%%% Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
+%%%% 2020-2021
+%%%%
+%%%% Gruppo composto da:
+%%%%    Lorenzo Olearo, matricola ------
+%%%%    Alessandro Riva, matricola ------
+
 
 
 % Load the Swipl's library that parses and generates CSV data
@@ -269,7 +277,25 @@ list_graph(G) :-
 %	@arg FileName the path of the input csv file
 
 read_graph(G, FileName) :-
-	csv_read_file(FileName, Rows, [separator(0'\t)]),
+	read_graph(G, FileName, 0'\t).
+
+
+%!	read_graph(+Graph:graph, +FileName:path, +Separator:number) is semidet
+%
+%	Predicate that reads arc/4 of Graph from a Separator separated csv file,
+%	every arc will be written as a triple {Source Destination Weight}
+%	omitting the term representing the graph <br>
+%	Graph will be asserted as graph if not already a graph <br>
+%	Every vertex present as end-point of the arc will be asserted as
+%	vertex of Graph <br>
+%	Every arc will be asserted as arc of Graph
+%
+%	@arg Graph graph object of the action
+%	@arg FileName the path of the input csv file
+%	@arg Separator the ASCII code correspoing to the separator of the csv file
+
+read_graph(G, FileName, Separator) :-
+	csv_read_file(FileName, Rows, [separator(Separator)]),
 	new_graph_from_rows(G, Rows).
 
 
@@ -791,9 +817,9 @@ mst_get(G, Source, PreorderTree) :-
 
 mst_get_neighbors(G, Source, WSort) :-
 	findall([G, Source, V, W] , (vertex_previous(G, V, Source),
-								   arc(G, V, Source, W)), From),
+								 arc(G, V, Source, W)), From),
 	findall([G, Source, V, W], (vertex_previous(G, V, Source),
-								   arc(G, Source, V, W)), To),
+								arc(G, Source, V, W)), To),
 	append(From, To, List),
 	build_arcs_from_list(List, Arcs),
 	sort(3, @=<, Arcs, VSort),
@@ -913,3 +939,6 @@ mst_reset(G) :-
 	delete_heap(G),
 	retractall(vertex_key(G, _, _)),
 	retractall(vertex_previous(G, _, _)).
+
+
+%%%% end of file -- mst.pl--
