@@ -77,7 +77,7 @@
 
 ;;; Return a list containing all the vertices in a given graph.
 (defun graph-vertices (graph-id)
-  (let ((acc '()))
+  (let ((acc ()))
     (maphash #'(lambda (key val)
                  (declare (ignore key))
                  (cond ((equal (second val) graph-id)

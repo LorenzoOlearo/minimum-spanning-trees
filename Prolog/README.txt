@@ -1,9 +1,13 @@
-Implementazione Prolog dell'algoritmo di Prim per la risoluzione del
-problema MST.
+Minimum Spanning Trees
+Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
+2020-2021
 
 - Componenti gruppo progetto:
   * Lorenzo Olearo, matricola ------
   * Alessandro Riva, matricola ------
+
+- Implementazione Prolog dell'algoritmo di Prim per la risoluzione del
+  problema MST.
 
 - L'intera API, contenente l'implementazione di grafi, heaps e dell'algoritmo
   di Prim, descritta nella consegna è contenuta nel file "mst.pl".
@@ -13,10 +17,10 @@ problema MST.
   true.
 
 Note riguardo l'implementazione:
-- L'API supporta grafi orientati e non orientati con le uniche differenze nei
-  predicati vertex_neighbors e adjs, dedicati all'interpretazione
-  non orientata dei grafi, e vertex_neighbors_oriented e adjs_oriented,
-  dedicati ai grafi orientati.
+- L'implementazione dei grafi ne supporta di orientati e non orientati con le
+  uniche differenze nei predicati vertex_neighbors e adjs, dedicati
+  all'interpretazione non orientata dei grafi, e vertex_neighbors_oriented e
+  adjs_oriented, dedicati ai grafi orientati.
   Si è scelto di porre la differenza nella ricerca degli adiacenti e non
   nella creazione degli archi, dove si sarebbero potuti mettere due archi
   diretti a rappresentarne uno non diretto.
@@ -24,7 +28,7 @@ Note riguardo l'implementazione:
   :- arc(graph, b, a, 1) fallirà ma potrà comparire come risultato dei
   predicati vertex_neighbors e adjs.
 
-- Il predicato mst_prim è da utilizzari con grafi non orientati e non
+- Il predicato mst_prim è da utilizzare con grafi non orientati e non
   presenta il supporto ai grafi orientati.
 
 - L'API è in grado di memorizzare mst multipli se e solo se calcolati su
@@ -50,5 +54,5 @@ Dettagli tecnici:
   seguente link: https://github.com/LorenzoOlearo/minimum-spanning-trees/
 
 - La documentazione Prolog di ogni predicato è stata generata tramite PlDoc,
-  non essendo consentita nella consegna, è disponibile sul repository GitHub
+  non essendo consentita nella consegna, è disponibile nel repository GitHub
   sopracitato.
