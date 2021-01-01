@@ -500,53 +500,53 @@
 
 ;;; Support function for mst-prim.
 ;;; Executes the recursively the iterating part of the algorithm.
-  (defun mst-prim-recurse (graph-id)
-    (cond ((heap-not-empty graph-id)
-           (let ((minimum (heap-extract graph-id)))
-             (setf (gethash (list 'VISITED graph-id (second minimum))
-                            *visited*)
-                   (list 'VERTEX graph-id (second minimum)))
-             (mapcar #'(lambda (arc)
-                         (cond ((and (equal (gethash (list 'VISITED
-                                                           graph-id
-                                                           (fourth arc))
-                                                     *visited*)
-                                            nil)
-                                     (< (fifth arc)
-                                        (fourth (gethash (list 'VERTEX-KEY
-                                                               graph-id
-                                                               (fourth arc))
-                                                         *vertex-keys*))))
-                                (heap-decrease-key
-                                 graph-id
-                                 (hashed-heap-first-index
-                                  graph-id
-                                  (fourth (gethash (list 'VERTEX-KEY
+(defun mst-prim-recurse (graph-id)
+  (cond ((heap-not-empty graph-id)
+         (let ((minimum (heap-extract graph-id)))
+           (setf (gethash (list 'VISITED graph-id (second minimum))
+                          *visited*)
+                 (list 'VERTEX graph-id (second minimum)))
+           (mapcar #'(lambda (arc)
+                       (cond ((and (equal (gethash (list 'VISITED
                                                          graph-id
                                                          (fourth arc))
-                                                   *vertex-keys*))
-                                  (fourth arc)
-                                  0)
-                                 (fifth arc))
-                                (setf (gethash (list 'PREVIOUS
-                                                     graph-id
-                                                     (fourth arc))
-                                               *previous*)
-                                      (list 'VERTEX
-                                            graph-id
-                                            (second minimum)))
-                                (setf (gethash (list 'VERTEX-KEY
-                                                     graph-id
-                                                     (fourth arc))
-                                               *vertex-keys*)
-                                      (list 'VERTEX-KEY
-                                            graph-id
-                                            (fourth arc)
-                                            (fifth arc))))
-                               (T nil)))
-                     (graph-vertex-neighbors graph-id (second minimum))))
-           (mst-prim-recurse graph-id))
-          (T nil)))
+                                                   *visited*)
+                                          nil)
+                                   (< (fifth arc)
+                                      (fourth (gethash (list 'VERTEX-KEY
+                                                             graph-id
+                                                             (fourth arc))
+                                                       *vertex-keys*))))
+                              (heap-decrease-key
+                               graph-id
+                               (hashed-heap-first-index
+                                graph-id
+                                (fourth (gethash (list 'VERTEX-KEY
+                                                       graph-id
+                                                       (fourth arc))
+                                                 *vertex-keys*))
+                                (fourth arc)
+                                0)
+                               (fifth arc))
+                              (setf (gethash (list 'PREVIOUS
+                                                   graph-id
+                                                   (fourth arc))
+                                             *previous*)
+                                    (list 'VERTEX
+                                          graph-id
+                                          (second minimum)))
+                              (setf (gethash (list 'VERTEX-KEY
+                                                   graph-id
+                                                   (fourth arc))
+                                             *vertex-keys*)
+                                    (list 'VERTEX-KEY
+                                          graph-id
+                                          (fourth arc)
+                                          (fifth arc))))
+                             (T nil)))
+                   (graph-vertex-neighbors graph-id (second minimum))))
+         (mst-prim-recurse graph-id))
+        (T nil)))
 
 
 
