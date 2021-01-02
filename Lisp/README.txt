@@ -32,12 +32,12 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       stata implementata.
 
     * Si è scelto di implementare lo heap in modo da permettere la ricerca
-      su chiavi univoche diverse dalle chiavi di ordinamento.
+      su chiavi univoche diverse dalle chiavi di ordinamento tramite 
+      la funzione hashed-heap-first-index.
       Si è introdotto quindi la funzione heap-insert-extended che pone il
       primo elemento, della lista passata come valore, o l'elemento stesso se
       un atomo da insere a chiave univoca. Utilizzando heap-insert, tutto il
-      valore in input, sia esso lista o atomo
-      è posto a chiave univoca.
+      valore in input, sia esso lista o atomo, è posto a chiave univoca.
       Se ne illustra qui il funzionamento, assumendo value, value-1 e value-2
       atomici.
 
@@ -73,7 +73,10 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       Al fine di fornire un maggior supporto, è presentata anche la versione
       della libreria "mst-low-mem.lisp", che non utilizza tale struttura per
       lo heap riducendo così l'uso di memoria a scapito dei tempi di
-      esecuzione.
+      esecuzione. In tale versione la ricerca è effettuata su tutto il valore
+      dell'elemento nello heap tramite la funzione heap-first-index, è
+      quindi assente la differenza sopracitata tra chiave di ricerca e 
+      valore. 
 
 
 Dettagli tecnici:
@@ -94,7 +97,7 @@ Dettagli tecnici:
   Lispworks Personal Edition.
   Per un maggior supporto nei casi di raggiungiumento del limite della
   memoria si presenta anche la libreria "mst-low-mem.lisp", che ha un minor
-  impatto sulla memoria a scapito dei tempi di implementazione.
+  impatto sulla memoria a scapito dei tempi di esecuzione.
 
 - Risulta stabile il tempo di esecuzione in ambienti cmucl e sbcl,
   indipendentemente dal numero di esecuzioni e senza alcun problema relativo
