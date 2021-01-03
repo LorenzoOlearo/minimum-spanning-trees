@@ -31,10 +31,18 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
     * Non essendo necessaria, come da specifica, la funzione modify-key non è
       stata implementata.
 
+    * La funzione new-arc crea l'arco se e solo se il grafo e i vertici 
+      specificati sono già esistenti, e i vertici fanno parte del grafo.
+      In caso contrario viene generato l'errore "UNKNOWN VERTICES".
+
+    * Viene fornita la funzione read-graph-from-csv per leggere grafi da
+      file csv separati da tabulazioni. Questa funzione crea il grafo e i 
+      vertici se non già esistenti e gli archi che li collegano.
+
     * Si è scelto di implementare lo heap in modo da permettere la ricerca
       su chiavi univoche diverse dalle chiavi di ordinamento tramite 
       la funzione hashed-heap-first-index.
-      Si è introdotto quindi la funzione heap-insert-extended che pone il
+      Si è introdotta quindi la funzione heap-insert-extended che pone il
       primo elemento, della lista passata come valore, o l'elemento stesso se
       un atomo da insere a chiave univoca. Utilizzando heap-insert, tutto il
       valore in input, sia esso lista o atomo, è posto a chiave univoca.

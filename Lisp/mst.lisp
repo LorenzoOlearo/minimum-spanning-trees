@@ -315,8 +315,12 @@
                               k))
           (T (error "HEAP FULL ERROR")))))
 
+
+
 (defun heap-insert (heap-id k v)
   (heap-insert-extended heap-id k (list v)))
+
+
 
 ;;; HEAP DECREASE KEY
 ;;;
@@ -524,7 +528,7 @@
   (cond ((has-vertex graph-id source-id)
          (new-heap graph-id (length (graph-vertices graph-id)))
          (mst-prim-init graph-id source-id)
-         (mst-prim-recurse graph-id))
+         (mst-prim-recurse graph-id source-id))
         (T (error "GRAPH MISMATCH"))))
 
 
@@ -598,8 +602,14 @@
 
 ;;; Support function for mst-prim.
 ;;; Executes the recursively the iterating part of the algorithm.
-(defun mst-prim-recurse (graph-id)
-  (cond ((heap-not-empty graph-id)
+(defun mst-prim-recurse (graph-id source-id)
+  (cond ((and (heap-not-empty graph-id)
+              (or (gethash (list 'PREVIOUS
+                                 graph-id
+                                 (first (second (heap-head graph-id))))
+                           *previous*)
+                  (equal (first (second (heap-head graph-id)))
+                         source-id)))
          (let ((minimum (heap-extract-extended graph-id)))
            (setf (gethash (list 'VISITED
                                 graph-id
@@ -645,8 +655,9 @@
                                           (second arc))))
                              (T nil)))
                    (second (second minimum))))
-         (mst-prim-recurse graph-id))
-        (T nil)))
+         (mst-prim-recurse graph-id source-id))
+        ((heap-delete graph-id)
+         nil)))
 
 
 
@@ -654,7 +665,6 @@
 ;;; Extract the array from heap-id and starting from start-index finds the
 ;;; lowest index where the element with the given value is present.
 (defun heap-first-index (heap-id key value start-index)
-  (print "miss")
   (cond ((<= (heap-size (gethash heap-id *heaps*))
              start-index)
          nil)
@@ -733,11 +743,6 @@
 ;;; Clear all the hash tables related to the Prim's algorithm
 (defun prim-reset (heap-id)
   (maphash #'(lambda (k v)
-               (declare (ignore v))
-               (cond ((equal k heap-id)
-                      (remhash k *heaps*))))
-           *heaps*)
-  (maphash #'(lambda (k v)
                (cond ((equal (second v) heap-id)
                       (remhash k *vertex-keys*))))
            *vertex-keys*)
@@ -762,7 +767,7 @@
 
 ;;; Creates a graph reading arcs from a file or adds the arcs to the graph
 ;;; if already exixsting
-(defun read-graph (graph-id file-name)
+(defun read-graph-from-csv (graph-id file-name)
   (new-graph graph-id)
   (with-open-file (in file-name :direction :input :if-does-not-exist :error)
     (new-arcs-from graph-id in)))
