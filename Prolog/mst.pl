@@ -779,7 +779,16 @@ mst_prim(G) :-
 
 mst_prim(G) :-
 	heap_has_size(G, S),
-	S > 0, !,
+	S > 0,
+	heap_head(G, _, V),
+	findall(vertex_previous(G, V, _), vertex_previous(G, V, _), []), !,
+	delete_heap(G).
+
+mst_prim(G) :-
+	heap_has_size(G, S),
+	S > 0,
+	heap_head(G, _, V),
+	findall(vertex_previous(G, V, _), vertex_previous(G, V, _), [_ | _]), !,
 	heap_extract(G, _, V),
 	vertex_neighbors(G, V, Ns),
 	update_keys(G, Ns),
