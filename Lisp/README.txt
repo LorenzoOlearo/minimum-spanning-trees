@@ -73,6 +73,9 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       (heap-insert-extended heap-id key (list value-1 value-2))
       (heap-extract heap-id) --> (key (value-1 value-2))
 
+      La funzione heap-head-extended funziona analogamente a 
+      heap-extract-extended con la differenza che la prima non estrae il
+      valore dallo heap.
 
       Questa strutturazione dello heap è introdotta per i notevoli vantaggi
       che porta ai tempi di esecuzione dell'algoritmo di Prim, introduce

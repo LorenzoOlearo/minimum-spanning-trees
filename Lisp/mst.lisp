@@ -34,6 +34,7 @@
 ;;;; GRAPHS IMPLEMENTATION
 
 
+;;; Tests if a graph named graph-id exists.
 (defun is-graph (graph-id)
   (gethash graph-id *graphs*))
 
@@ -69,6 +70,7 @@
 
 
 
+;;; Tests if a vertex is in a graph
 (defun has-vertex (graph-id vertex-id)
   (equal (second (gethash (list 'VERTEX graph-id vertex-id) *vertices*))
          graph-id))
@@ -278,8 +280,14 @@
 
 ;;; Return a (list K V) where K is the minimum key in the heap and V the
 ;;; associated value.
-(defun heap-head (heap-id)
+(defun heap-head-extended (heap-id)
   (aref (fourth (gethash heap-id *heaps*)) 0))
+
+
+
+(defun heap-head (heap-id)
+  (list (first (heap-head-extended heap-id))
+        (first (second (heap-head-extended heap-id)))))
 
 
 
@@ -363,6 +371,9 @@
 
 
 
+;;; Support function for heap-decrease-key.
+;;; shift a heap entry up in the heap according to its key to keep heap
+;;; property
 (defun heap-decrease-key-shift-up (heap-id i)
   (cond ((and (> i 0)
               (> (first (aref (heap-actual-heap (gethash heap-id
@@ -533,44 +544,9 @@
 
 
 
+;;; Support function for mst-prim.
+;;; initializes the heap and the *vertex-keys* hash-table.
 (defun mst-prim-init (graph-id source-id)
-  (mapcar #'(lambda (arc)
-              (setf (gethash (list 'INDEX
-                                   graph-id
-                                   (list (if (equal (third arc) source-id)
-                                             0
-                                             inf)
-                                         (third arc)))
-                             *indices*)
-                    (append (gethash (list 'INDEX
-                                           graph-id
-                                           (list (if (equal (third arc)
-                                                            source-id)
-                                                     0
-                                                     inf)
-                                                 (third arc)))
-                                     *indices*)
-                            (list (list (fourth arc)
-                                        (fifth arc)))))
-              (setf (gethash (list 'INDEX
-                                   graph-id
-                                   (list (if (equal (fourth arc)
-                                                    source-id)
-                                             0
-                                             inf)
-                                         (fourth arc)))
-                             *indices*)
-                    (append (gethash (list 'INDEX
-                                           graph-id
-                                           (list (if (equal (fourth arc)
-                                                            source-id)
-                                                     0
-                                                     inf)
-                                                 (fourth arc)))
-                                     *indices*)
-                            (list (list (third arc)
-                                        (fifth arc))))))
-          (graph-arcs graph-id))
   (mapcar #'(lambda (v)
               (setf (gethash (list 'VERTEX-KEY
                                    graph-id
@@ -581,22 +557,70 @@
                           (third v)
                           (if (equal (third v) source-id)
                               0
-                              inf)))
+                            inf)))
               (heap-insert-extended
                graph-id
                (if (equal (third v) source-id)
                    0
-                   inf)
-               (list (third v)
-                     (gethash (list 'INDEX
-                                    graph-id
-                                    (list (if (equal (third v)
-                                                     source-id)
-                                              0
+                 inf)
+               (list (third v))))
+          (graph-vertices graph-id))
+  (mapcar #'(lambda (arc)
+              (let ((val-src (second (aref (heap-actual-heap (gethash
+                                                              graph-id
+                                                              *heaps*))
+                                           (hashed-heap-first-index
+                                            graph-id
+                                            (if (equal (third arc)
+                                                       source-id)
+                                                0
                                               inf)
-                                          (third v)))
-                              *indices*))))
-          (graph-vertices graph-id)))
+                                            (third arc)
+                                            0))))
+                    (val-dst (second (aref (heap-actual-heap (gethash
+                                                              graph-id
+                                                              *heaps*))
+                                           (hashed-heap-first-index
+                                            graph-id
+                                            (if (equal (fourth arc)
+                                                       source-id)
+                                                0
+                                              inf)
+                                            (fourth arc)
+                                            0)))))
+                (setf (aref (heap-actual-heap (gethash graph-id *heaps*))
+                            (hashed-heap-first-index graph-id
+                                                     (if (equal (third arc)
+                                                                source-id)
+                                                         0
+                                                       inf)
+                                                     (third arc)
+                                                     0))
+                      (list (if (equal (third arc)
+                                       source-id)
+                                0
+                              inf)
+                            (list (first val-src)
+                                  (append (second val-src)
+                                          (list (list (fourth arc)
+                                                      (fifth arc)))))))
+                (setf (aref (heap-actual-heap (gethash graph-id *heaps*))
+                            (hashed-heap-first-index graph-id
+                                                     (if (equal (fourth arc)
+                                                                source-id)
+                                                         0
+                                                       inf)
+                                                     (fourth arc)
+                                                     0))
+                      (list (if (equal (fourth arc)
+                                       source-id)
+                                0
+                              inf)
+                            (list (first val-dst)
+                                  (append (second val-dst)
+                                          (list (list (third arc)
+                                                      (fifth arc)))))))))
+          (graph-arcs graph-id)))
 
 
 
@@ -606,9 +630,9 @@
   (cond ((and (heap-not-empty graph-id)
               (or (gethash (list 'PREVIOUS
                                  graph-id
-                                 (first (second (heap-head graph-id))))
+                                 (second (heap-head graph-id)))
                            *previous*)
-                  (equal (first (second (heap-head graph-id)))
+                  (equal (second (heap-head graph-id))
                          source-id)))
          (let ((minimum (heap-extract-extended graph-id)))
            (setf (gethash (list 'VISITED
