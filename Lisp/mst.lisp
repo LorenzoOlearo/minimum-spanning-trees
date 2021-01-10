@@ -606,7 +606,8 @@
 (defun get-prim-arcs (graph-id source-id)
   (let ((acc ()))
     (maphash #'(lambda (k v)
-                 (cond ((equal (third v) source-id)
+                 (cond ((and (equal (second v) graph-id)
+                             (equal (third v) source-id))
                         (push (list 'ARC
                                     (third v)
                                     (third k)
