@@ -20,60 +20,34 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       Si è scelto di rappresentarli con un solo arco per indicare entrambe
       le direzioni.
 
-    * L'API è in grado di memorizzare mst multipli se e solo se calcolati su
+    * L'API è in grado di memorizzare MST multipli se e solo se calcolati su
       grafi diversi. Una chiamata a mst-prim su un grafo eliminerà il
-      risultato della precedente, indipendentente dal vertice di partenza.
+      risultato della precedente se calcolata sullo stesso, indipendentente
+      dal vertice di partenza.
 
     * Per migliorare i tempi di ricerca all'interno dello heap è stata
-      introdotta la hash-table *indices* contenente l'indice degli elementi
+      introdotta la hash-table *indices* contenente l'indici degli elementi
       all'interno dello array rappresente lo heap.
 
     * Non essendo necessaria, come da specifica, la funzione modify-key non è
       stata implementata.
 
-    * Si è scelto di implementare lo heap in modo da permettere la ricerca
-      su chiavi univoche diverse dalle chiavi di ordinamento.
-      Si è introdotto quindi la funzione heap-insert-extended che pone il
-      primo elemento, della lista passata come valore, o l'elemento stesso se
-      un atomo da insere a chiave univoca. Utilizzando heap-insert, tutto il
-      valore in input, sia esso lista o atomo
-      è posto a chiave univoca.
-      Se ne illustra qui il funzionamento, assumendo value, value-1 e value-2
-      atomici.
+    * La funzione new-arc crea un arco tra due vertici se e solo se questi
+      appartengono al grafo specificato, in caso contrario viene generato
+      l'errore "UNKNOWN VERTICES".
+      Per scelta implementativa, il peso dell'arco non fa parte della sua
+      chiave nella rispettiva hashtable, di conseguenza, creare un arco
+      tramite la funzione new-arc quando già esistente ma con peso diverso,
+      comporta la sostituzione di quello vecchio con quello appena creato.
+      Dal momento che per rappresentare la relazione tra due vertici viene
+      utilizzato un solo arco, dato un arco nella forma
+      (ARC graph-id v-id u-id weight), creare tramite la funzione new-arc lo
+      stesso arco ma passando i vertici in ordine opposto, comporta la
+      sostituzione di quello già esistente con quello appena creato.
 
-      (heap-insert heap-id key value)
-      (heap-extract heap-id) --> (key value)
-
-      (heap-insert heap-id key value)
-      (heap-extract-extended heap-id) --> (key (value))
-
-      (heap-insert-extended heap-id key value)
-      (heap-extract heap-id) --> (key value)
-
-      (heap-insert-extended heap-id key value)
-      (heap-extract-extended heap-id) --> (key (value))
-
-      (heap-insert heap-id key (list value-1 value-2))
-      (heap-extract heap-id) --> (key (value-1 value-2))
-
-      (heap-insert heap-id key (list value-1 value-2))
-      (heap-extract-extended heap-id) --> (key ((value-1 value-2)))
-
-      (heap-insert-extended heap-id key (list value-1 value-2))
-      (heap-extract heap-id) --> (key value-1)
-
-      (heap-insert-extended heap-id key (list value-1 value-2))
-      (heap-extract heap-id) --> (key (value-1 value-2))
-
-
-      Questa strutturazione dello heap è introdotta per i notevoli vantaggi
-      che porta ai tempi di esecuzione dell'algoritmo di Prim, introduce
-      tuttavia un maggiore uso della memoria che può portare al superamento
-      del limite di memoria imposto dall'ambiente Lispworks Personal Edition.
-      Al fine di fornire un maggior supporto, è presentata anche la versione
-      della libreria "mst-low-mem.lisp", che non utilizza tale struttura per
-      lo heap riducendo così l'uso di memoria a scapito dei tempi di
-      esecuzione.
+    * Viene fornita la funzione read-graph-from-csv per leggere grafi da
+      file csv separati da tabulazioni. Questa funzione crea il grafo e i
+      vertici se non già esistenti e gli archi che li collegano.
 
 
 Dettagli tecnici:
@@ -102,6 +76,7 @@ Dettagli tecnici:
 
 - Il codice allegato è stato indentato come richiesto da Emacs su 80 colonne.
 
-- Allo scadere del termine ultimo per la consegna, il repository GitHub in cui
-  il progetto è stato sviluppato sarà reso pubblicamente disponibile al
-  seguente link: https://github.com/LorenzoOlearo/minimum-spanning-trees/
+- Allo scadere del termine ultimo per la consegna di febbrario, il repository
+  GitHub in cui il progetto è stato sviluppato sarà reso pubblicamente
+  disponibile al seguente link:
+  https://github.com/LorenzoOlearo/minimum-spanning-trees/
