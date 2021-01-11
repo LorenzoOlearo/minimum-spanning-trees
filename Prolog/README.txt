@@ -28,6 +28,19 @@ Note riguardo l'implementazione:
   :- arc(graph, b, a, 1) fallirà ma potrà comparire come risultato dei
   predicati vertex_neighbors e adjs.
 
+- I predicati new_arc/3 e new_arc/4 aggiungono un arco nella base di conoscenza
+  se e solo se i vertici specificati appartengono al relativo grafo.
+  Dato un arco nella forma arc(graph_id, u, v, weight) nella base di conoscenza,
+  la creazione di un nuovo arco tra gli stessi vertici tramite il predicato
+  new_arc, comporta la sostituzione dell'arco esistente con quello nuovo,
+  indipendentente dal peso del collegamento.
+  Dal momento che per rappresentare la relazione tra due vertici del grafo si è
+  scelto di utilizzare un solo arco tra i due, dato un arco nella base di
+  conoscenza arc(graph_id, u, v, weight), creare un arco tramite i predicati
+  new_arc tra gli stessi vertici ma in ordine opposto, comporta la sostituzione
+  del collegamento esistente con quello appena creato, indipendentente dal suo
+  peso.
+
 - Il predicato mst_prim è da utilizzare con grafi non orientati e non
   presenta il supporto ai grafi orientati.
 
@@ -49,9 +62,10 @@ Dettagli tecnici:
 
 - Il codice allegato è stato indentato come richiesto da Emacs su 80 colonne.
 
-- Allo scadere del termine ultimo per la consegna, il repository GitHub in cui
-  il progetto è stato sviluppato sarà reso pubblicamente disponibile al
-  seguente link: https://github.com/LorenzoOlearo/minimum-spanning-trees/
+- Allo scadere del termine ultimo per la consegna di febbraio, il repository
+  GitHub in cui il progetto è stato sviluppato sarà reso pubblicamente
+  disponibile al seguente link:
+  https://github.com/LorenzoOlearo/minimum-spanning-trees/
 
 - La documentazione Prolog di ogni predicato è stata generata tramite PlDoc,
   non essendo consentita nella consegna, è disponibile nel repository GitHub

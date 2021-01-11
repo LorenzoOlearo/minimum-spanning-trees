@@ -20,23 +20,33 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       Si è scelto di rappresentarli con un solo arco per indicare entrambe
       le direzioni.
 
-    * L'API è in grado di memorizzare mst multipli se e solo se calcolati su
+    * L'API è in grado di memorizzare MST multipli se e solo se calcolati su
       grafi diversi. Una chiamata a mst-prim su un grafo eliminerà il
-      risultato della precedente, indipendentente dal vertice di partenza.
+      risultato della precedente se calcolata sullo stesso, indipendentente
+      dal vertice di partenza.
 
     * Per migliorare i tempi di ricerca all'interno dello heap è stata
-      introdotta la hash-table *indices* contenente l'indice degli elementi
+      introdotta la hash-table *indices* contenente l'indici degli elementi
       all'interno dello array rappresente lo heap.
 
     * Non essendo necessaria, come da specifica, la funzione modify-key non è
       stata implementata.
 
-    * La funzione new-arc crea l'arco se e solo se il grafo e i vertici 
-      specificati sono già esistenti, e i vertici fanno parte del grafo.
-      In caso contrario viene generato l'errore "UNKNOWN VERTICES".
+    * La funzione new-arc crea un arco tra due vertici se e solo se questi
+      appartengono al grafo specificato, in caso contrario viene generato
+      l'errore "UNKNOWN VERTICES".
+      Per scelta implementativa, il peso dell'arco non fa parte della sua
+      chiave nella rispettiva hashtable, di conseguenza, creare un arco
+      tramite la funzione new-arc quando già esistente ma con peso diverso,
+      comporta la sostituzione di quello vecchio con quello appena creato.
+      Dal momento che per rappresentare la relazione tra due vertici viene
+      utilizzato un solo arco, dato un arco nella forma
+      (ARC graph-id v-id u-id weight), creare tramite la funzione new-arc lo
+      stesso arco ma passando i vertici in ordine opposto, comporta la
+      sostituzione di quello già esistente con quello appena creato.
 
     * Viene fornita la funzione read-graph-from-csv per leggere grafi da
-      file csv separati da tabulazioni. Questa funzione crea il grafo e i 
+      file csv separati da tabulazioni. Questa funzione crea il grafo e i
       vertici se non già esistenti e gli archi che li collegano.
 
     * Si è scelto di implementare lo heap in modo da permettere la ricerca
@@ -116,6 +126,7 @@ Dettagli tecnici:
 
 - Il codice allegato è stato indentato come richiesto da Emacs su 80 colonne.
 
-- Allo scadere del termine ultimo per la consegna, il repository GitHub in cui
-  il progetto è stato sviluppato sarà reso pubblicamente disponibile al
-  seguente link: https://github.com/LorenzoOlearo/minimum-spanning-trees/
+- Allo scadere del termine ultimo per la consegna di febbrario, il repository
+  GitHub in cui il progetto è stato sviluppato sarà reso pubblicamente
+  disponibile al seguente link:
+  https://github.com/LorenzoOlearo/minimum-spanning-trees/
