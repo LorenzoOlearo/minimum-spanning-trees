@@ -281,13 +281,47 @@
 ;;; Return a (list K V) where K is the minimum key in the heap and V the
 ;;; associated value.
 (defun heap-head-extended (heap-id)
-  (aref (fourth (gethash heap-id *heaps*)) 0))
+  (heap-get heap-id 0))
 
 
 
 (defun heap-head (heap-id)
-  (list (first (heap-head-extended heap-id))
-        (first (second (heap-head-extended heap-id)))))
+  (list (heap-key (heap-head-extended heap-id))
+        (heap-value (heap-head-extended heap-id))))
+
+
+
+;;; Returns the key of a heap-element (key value) or (key (value ...)).
+(defun heap-key (heap-element)
+  (first heap-element))
+
+
+
+;;; Returns the value of a heap-element (key (value ...))
+;;; This function is supposed to never be used with non extended heap
+;;; functions (e.g. (heap-value (heap-head heap-id)) is not proper usage,
+;;; (heap-value (heap-head-extended heap-id)) is proper usage)
+(defun heap-value (heap-element)
+  (first (heap-value-extended heap-element)))
+
+
+
+;;; Returns the list (value ...) of a heap-element (key (value ...))
+;;; This function is supposed to never be used with non extended heap
+;;; functions (e.g. (heap-value-extended (heap-head heap-id)) is not proper
+;;; usage, (heap-value-extended (heap-head-extended heap-id)) is proper
+;;; usage)
+;;; Although, it is noted, how (heap-value-extended (heap-head heap-id))
+;;; returns the same value as (heap-value (heap-head-extended heap-id))
+(defun heap-value-extended (heap-element)
+  (second heap-element))
+
+
+
+;;; Returns a heap-element (key (value ...)) stored in a heap in the array
+;;; position index
+(defun heap-get (heap-id index)
+  (aref (heap-actual-heap (gethash heap-id *heaps*)) index))
 
 
 
@@ -304,8 +338,9 @@
                  (list v))))
     (cond ((and (< (heap-size (gethash heap-id *heaps*))
                    (length (heap-actual-heap (gethash heap-id *heaps*))))
-                (equal (aref (heap-actual-heap (gethash heap-id *heaps*))
-                             (heap-size (gethash heap-id *heaps*)))
+                (equal (heap-get heap-id
+                                         (heap-size (gethash heap-id
+                                                             *heaps*)))
                        nil))
            (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
                        (heap-size (gethash heap-id *heaps*)))
@@ -341,31 +376,21 @@
 ;;;         i = Parent(i)
 ;;;
 (defun heap-decrease-key (heap-id i k)
-  (cond ((>= (first (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
+  (cond ((>= (heap-key (heap-get heap-id i))
              k)
          (remhash (list 'INDEX
                         heap-id
-                        (list (first (aref (heap-actual-heap
-                                            (gethash heap-id *heaps*))
-                                           i))
-                              (first (second (aref (heap-actual-heap
-                                                    (gethash heap-id *heaps*))
-                                                   i)))))
+                        (list (heap-key (heap-get heap-id i))
+                              (heap-value (heap-get heap-id i))))
                   *indices*)
          (setf (gethash (list 'INDEX
                               heap-id
                               (list k
-                                    (first (second (aref (heap-actual-heap
-                                                          (gethash
-                                                           heap-id
-                                                           *heaps*))
-                                                         i)))))
+                                    (heap-value (heap-get heap-id i))))
                         *indices*)
                i)
          (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i)
-               (list k (second (aref (heap-actual-heap (gethash heap-id
-                                                                *heaps*))
-                                     i))))
+               (list k (heap-value-extended (heap-get heap-id i))))
          (heap-decrease-key-shift-up heap-id i))
         (T (error "THE NEW KEY IS GREATER"))))
 
@@ -376,12 +401,8 @@
 ;;; property
 (defun heap-decrease-key-shift-up (heap-id i)
   (cond ((and (> i 0)
-              (> (first (aref (heap-actual-heap (gethash heap-id
-                                                         *heaps*))
-                              (floor (- i 1) 2)))
-                 (first (aref (heap-actual-heap (gethash heap-id
-                                                         *heaps*))
-                              i))))
+              (> (heap-key (heap-get heap-id (floor (- i 1) 2)))
+                 (heap-key (heap-get heap-id i))))
          (heap-switch heap-id (floor (- i 1) 2) i)
          (heap-decrease-key-shift-up heap-id (floor (- i 1) 2)))
         (T T)))
@@ -391,16 +412,16 @@
 ;;; Switch the the entry in position i in the heap identified
 ;;; by heap-id with the one on position j and vice versa.
 (defun heap-switch (heap-id i j)
-  (let ((vi (aref (heap-actual-heap (gethash heap-id *heaps*)) i))
-        (vj (aref (heap-actual-heap (gethash heap-id *heaps*)) j)))
+  (let ((vi (heap-get heap-id i))
+        (vj (heap-get heap-id j)))
     (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) i) vj)
     (setf (aref (heap-actual-heap (gethash heap-id *heaps*)) j) vi)
-    (setf (gethash (list 'INDEX heap-id (list (first vi)
-                                              (first (second vi))))
+    (setf (gethash (list 'INDEX heap-id (list (heap-key vi)
+                                              (heap-value vi)))
                    *indices*)
           j)
-    (setf (gethash (list 'INDEX heap-id (list (first vj)
-                                              (first (second vj))))
+    (setf (gethash (list 'INDEX heap-id (list (heap-key vj)
+                                              (heap-value vj)))
                    *indices*)
           i)))
 
@@ -428,22 +449,17 @@
            (heap-switch heap-id 0 (heap-size (gethash heap-id *heaps*)))
            (remhash (list 'INDEX
                           heap-id
-                          (list (first (aref (heap-actual-heap
-                                              (gethash heap-id
-                                                       *heaps*))
-                                             (heap-size
-                                              (gethash heap-id
-                                                       *heaps*))))
-                                (first (second (aref (heap-actual-heap
-                                                      (gethash heap-id
-                                                               *heaps*))
-                                                     (heap-size
-                                                      (gethash heap-id
-                                                               *heaps*)))))))
+                          (list (heap-key (heap-get
+                                           heap-id
+                                           (heap-size (gethash heap-id
+                                                               *heaps*))))
+                                (heap-value (heap-get
+                                             heap-id
+                                             (heap-size (gethash heap-id
+                                                                 *heaps*))))))
                     *indices*)
            (heapify heap-id 0)
-           (car (cons (aref (heap-actual-heap (gethash heap-id *heaps*))
-                            (heap-size (gethash heap-id *heaps*)))
+           (car (cons (heap-get heap-id (heap-size (gethash heap-id *heaps*)))
                       (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
                                   (heap-size (gethash heap-id *heaps*)))
                             nil))))))
@@ -452,7 +468,7 @@
 
 (defun heap-extract (heap-id)
   (let ((record (heap-extract-extended heap-id)))
-    (list (first record)(first (second record)))))
+    (list (heap-key record) (heap-value record))))
 
 
 
@@ -475,19 +491,19 @@
         (r (+ (* i 2) 2))
         (heap-rep (gethash heap-id *heaps*)))
     (cond ((and (< l (heap-size heap-rep))
-                (< (first (aref (heap-actual-heap heap-rep) l))
-                   (first (aref (heap-actual-heap heap-rep) i))))
+                (< (heap-key (heap-get heap-id l))
+                   (heap-key (heap-get heap-id i))))
            (cond ((and
                    (< r (heap-size heap-rep))
-                   (< (first (aref (heap-actual-heap heap-rep) r))
-                      (first (aref (heap-actual-heap heap-rep) l))))
+                   (< (heap-key (heap-get heap-id r))
+                      (heap-key (heap-get heap-id l))))
                   (heap-switch heap-id i r)
                   (heapify heap-id r))
                  (T (heap-switch heap-id i l)
                     (heapify heap-id l))))
           ((and (< r (heap-size heap-rep))
-                (< (first (aref (heap-actual-heap heap-rep) r))
-                   (first (aref (heap-actual-heap heap-rep) i))))
+                (< (heap-key (heap-get heap-id r))
+                   (heap-key (heap-get heap-id i))))
            (heap-switch heap-id i r)
            (heapify heap-id r)))))
 
@@ -566,28 +582,26 @@
                (list (third v))))
           (graph-vertices graph-id))
   (mapcar #'(lambda (arc)
-              (let ((val-src (second (aref (heap-actual-heap (gethash
-                                                              graph-id
-                                                              *heaps*))
-                                           (hashed-heap-first-index
-                                            graph-id
-                                            (if (equal (third arc)
-                                                       source-id)
-                                                0
-                                              inf)
-                                            (third arc)
-                                            0))))
-                    (val-dst (second (aref (heap-actual-heap (gethash
-                                                              graph-id
-                                                              *heaps*))
-                                           (hashed-heap-first-index
-                                            graph-id
-                                            (if (equal (fourth arc)
-                                                       source-id)
-                                                0
-                                              inf)
-                                            (fourth arc)
-                                            0)))))
+              (let ((val-src (heap-value-extended (heap-get
+                                                   graph-id
+                                                   (hashed-heap-first-index
+                                                    graph-id
+                                                    (if (equal (third arc)
+                                                               source-id)
+                                                        0
+                                                      inf)
+                                                    (third arc)
+                                                    0))))
+                    (val-dst (heap-value-extended (heap-get
+                                                   graph-id
+                                                   (hashed-heap-first-index
+                                                    graph-id
+                                                    (if (equal (fourth arc)
+                                                               source-id)
+                                                        0
+                                                      inf)
+                                                    (fourth arc)
+                                                    0)))))
                 (setf (aref (heap-actual-heap (gethash graph-id *heaps*))
                             (hashed-heap-first-index graph-id
                                                      (if (equal (third arc)
@@ -630,16 +644,16 @@
   (cond ((and (heap-not-empty graph-id)
               (or (gethash (list 'PREVIOUS
                                  graph-id
-                                 (second (heap-head graph-id)))
+                                 (heap-value (heap-head-extended graph-id)))
                            *previous*)
-                  (equal (second (heap-head graph-id))
+                  (equal (heap-value (heap-head-extended graph-id))
                          source-id)))
          (let ((minimum (heap-extract-extended graph-id)))
            (setf (gethash (list 'VISITED
                                 graph-id
-                                (first (second minimum)))
+                                (heap-value minimum))
                           *visited*)
-                 (list 'VERTEX graph-id (first (second minimum))))
+                 (list 'VERTEX graph-id (heap-value minimum)))
            (mapcar #'(lambda (arc)
                        (cond ((and (equal (gethash (list 'VISITED
                                                          graph-id
@@ -668,7 +682,7 @@
                                              *previous*)
                                     (list 'VERTEX
                                           graph-id
-                                          (first (second minimum))))
+                                          (heap-value minimum)))
                               (setf (gethash (list 'VERTEX-KEY
                                                    graph-id
                                                    (first arc))
@@ -678,7 +692,7 @@
                                           (first arc)
                                           (second arc))))
                              (T nil)))
-                   (second (second minimum))))
+                   (second (heap-value-extended minimum))))
          (mst-prim-recurse graph-id source-id))
         ((heap-delete graph-id)
          nil)))
@@ -692,17 +706,12 @@
   (cond ((<= (heap-size (gethash heap-id *heaps*))
              start-index)
          nil)
-        ((> (first (aref (heap-actual-heap (gethash heap-id *heaps*))
-                         start-index))
+        ((> (heap-key (heap-get heap-id start-index))
             key)
          nil)
-        ((and (equal (first (aref (heap-actual-heap (gethash heap-id
-                                                             *heaps*))
-                                  start-index))
+        ((and (equal (heap-key (heap-get heap-id start-index))
                      key)
-              (equal (second (aref (heap-actual-heap (gethash heap-id
-                                                              *heaps*))
-                                   start-index))
+              (equal (heap-value (heap-get heap-id start-index))
                      value))
          start-index)
         (T (or (heap-first-index heap-id
