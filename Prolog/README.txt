@@ -30,10 +30,10 @@ Note riguardo l'implementazione:
 
 - I predicati new_arc/3 e new_arc/4 aggiungono un arco nella base di conoscenza
   se e solo se i vertici specificati appartengono al relativo grafo.
-  Dato un arco nella forma arc(graph_id, u, v, weight) nella base di conoscenza,
-  la creazione di un nuovo arco tra gli stessi vertici tramite il predicato
-  new_arc, comporta la sostituzione dell'arco esistente con quello nuovo,
-  indipendentente dal peso del collegamento.
+  Dato un arco nella forma arc(graph_id, u, v, weight) nella base di
+  conoscenza, la creazione di un nuovo arco tra gli stessi vertici tramite il
+  predicato new_arc, comporta la sostituzione dell'arco esistente con quello
+  nuovo, indipendentente dal peso del collegamento.
   Dal momento che per rappresentare la relazione tra due vertici del grafo si è
   scelto di utilizzare un solo arco tra i due, dato un arco nella base di
   conoscenza arc(graph_id, u, v, weight), creare un arco tramite i predicati

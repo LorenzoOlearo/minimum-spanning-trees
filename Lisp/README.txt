@@ -26,7 +26,7 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       dal vertice di partenza.
 
     * Per migliorare i tempi di ricerca all'interno dello heap è stata
-      introdotta la hash-table *indices* contenente l'indici degli elementi
+      introdotta la hash-table *indices* contenente l'indice degli elementi
       all'interno dello array rappresente lo heap.
 
     * Non essendo necessaria, come da specifica, la funzione modify-key non è
@@ -95,9 +95,8 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       della libreria "mst-low-mem.lisp", che non utilizza tale struttura per
       lo heap riducendo così l'uso di memoria a scapito dei tempi di
       esecuzione. In tale versione la ricerca è effettuata su tutto il valore
-      dell'elemento nello heap tramite la funzione heap-first-index, è
-      quindi assente la differenza sopracitata tra chiave di ricerca e 
-      valore. 
+      dell'elemento nello heap, è quindi assente la differenza sopracitata tra
+      chiave di ricerca e valore.
 
 
 Dettagli tecnici:
