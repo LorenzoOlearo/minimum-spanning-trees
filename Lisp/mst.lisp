@@ -597,12 +597,12 @@
                           (third v)
                           (if (equal (third v) source-id)
                               0
-                            inf)))
+                              inf)))
               (heap-insert-extended
                graph-id
                (if (equal (third v) source-id)
                    0
-                 inf)
+                   inf)
                (list (third v))))
           (graph-vertices graph-id))
   (mapcar #'(lambda (arc)
@@ -613,7 +613,7 @@
                                                     (if (equal (third arc)
                                                                source-id)
                                                         0
-                                                      inf)
+                                                        inf)
                                                     (third arc)
                                                     0))))
                     (val-dst (heap-value-extended (heap-get
@@ -623,7 +623,7 @@
                                                     (if (equal (fourth arc)
                                                                source-id)
                                                         0
-                                                      inf)
+                                                        inf)
                                                     (fourth arc)
                                                     0)))))
                 (setf (aref (heap-actual-heap (gethash graph-id *heaps*))
@@ -631,13 +631,13 @@
                                                      (if (equal (third arc)
                                                                 source-id)
                                                          0
-                                                       inf)
+                                                         inf)
                                                      (third arc)
                                                      0))
                       (list (if (equal (third arc)
                                        source-id)
                                 0
-                              inf)
+                                inf)
                             (list (first val-src)
                                   (append (second val-src)
                                           (list (list (fourth arc)
@@ -647,13 +647,13 @@
                                                      (if (equal (fourth arc)
                                                                 source-id)
                                                          0
-                                                       inf)
+                                                         inf)
                                                      (fourth arc)
                                                      0))
                       (list (if (equal (fourth arc)
                                        source-id)
                                 0
-                              inf)
+                                inf)
                             (list (first val-dst)
                                   (append (second val-dst)
                                           (list (list (third arc)
