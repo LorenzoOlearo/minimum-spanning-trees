@@ -228,6 +228,29 @@
 
 
 
+;;; Increases the capacity of a heap.
+(defun heap-increase-capacity (heap-id &optional (capacity 1))
+  (let ((size (heap-size (gethash heap-id *heaps*)))
+        (actual-heap (heap-actual-heap (gethash heap-id *heaps*))))
+    (heap-delete heap-id)
+    (setf (gethash heap-id *heaps*)
+          (list 'HEAP heap-id size (make-array (+ (length actual-heap)
+                                                  capacity)
+                                               :initial-element nil)))
+    (copy-array actual-heap (heap-actual-heap (gethash heap-id *heaps*)))))
+
+
+
+;;; Copies the content of an array onto another.
+(defun copy-array (original copy &optional (start 0))
+  (cond ((and (< start (length original))
+              (>= (length copy) (length original)))
+         (setf (aref copy start) (aref original start))
+         (copy-array original copy (+ start 1)))
+        (T nil)))
+
+
+
 ;;; Access function for a heap-rep.
 (defun heap-id (heap-rep)
   (cond ((equal (first heap-rep)
@@ -339,8 +362,8 @@
     (cond ((and (< (heap-size (gethash heap-id *heaps*))
                    (length (heap-actual-heap (gethash heap-id *heaps*))))
                 (equal (heap-get heap-id
-                                         (heap-size (gethash heap-id
-                                                             *heaps*)))
+                                 (heap-size (gethash heap-id
+                                                     *heaps*)))
                        nil))
            (setf (aref (heap-actual-heap (gethash heap-id *heaps*))
                        (heap-size (gethash heap-id *heaps*)))
@@ -356,7 +379,8 @@
            (heap-decrease-key heap-id
                               (- (heap-size (gethash heap-id *heaps*)) 1)
                               k))
-          (T (error "HEAP FULL ERROR")))))
+          (T (heap-increase-capacity heap-id)
+             (heap-insert-extended heap-id k v)))))
 
 
 
@@ -573,12 +597,12 @@
                           (third v)
                           (if (equal (third v) source-id)
                               0
-                            inf)))
+                              inf)))
               (heap-insert-extended
                graph-id
                (if (equal (third v) source-id)
                    0
-                 inf)
+                   inf)
                (list (third v))))
           (graph-vertices graph-id))
   (mapcar #'(lambda (arc)
@@ -589,7 +613,7 @@
                                                     (if (equal (third arc)
                                                                source-id)
                                                         0
-                                                      inf)
+                                                        inf)
                                                     (third arc)
                                                     0))))
                     (val-dst (heap-value-extended (heap-get
@@ -599,7 +623,7 @@
                                                     (if (equal (fourth arc)
                                                                source-id)
                                                         0
-                                                      inf)
+                                                        inf)
                                                     (fourth arc)
                                                     0)))))
                 (setf (aref (heap-actual-heap (gethash graph-id *heaps*))
@@ -607,13 +631,13 @@
                                                      (if (equal (third arc)
                                                                 source-id)
                                                          0
-                                                       inf)
+                                                         inf)
                                                      (third arc)
                                                      0))
                       (list (if (equal (third arc)
                                        source-id)
                                 0
-                              inf)
+                                inf)
                             (list (first val-src)
                                   (append (second val-src)
                                           (list (list (fourth arc)
@@ -623,13 +647,13 @@
                                                      (if (equal (fourth arc)
                                                                 source-id)
                                                          0
-                                                       inf)
+                                                         inf)
                                                      (fourth arc)
                                                      0))
                       (list (if (equal (fourth arc)
                                        source-id)
                                 0
-                              inf)
+                                inf)
                             (list (first val-dst)
                                   (append (second val-dst)
                                           (list (list (third arc)

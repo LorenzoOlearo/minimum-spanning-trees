@@ -25,6 +25,12 @@ Progetto gennaio 2021 (E1P) Linguaggi di Programmazione Anno Accademico
       risultato della precedente se calcolata sullo stesso, indipendentente
       dal vertice di partenza.
 
+    * La capacità dello heap cresce all'inserimento se necessario.
+      L'incremento della capacità è normalmente di 1 per garantire il minimo
+      peso sulla memoria. Se si desidera aumentare la capacità manualmente
+      è messa a disposizione la funzione 
+      (heap-increase-capacity heap-id increment)
+
     * Per migliorare i tempi di ricerca all'interno dello heap è stata
       introdotta la hash-table *indices* contenente l'indice degli elementi
       all'interno dello array rappresente lo heap.
