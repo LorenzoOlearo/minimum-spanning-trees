@@ -200,6 +200,29 @@
 
 
 
+;;; Increases the capacity of a heap.
+(defun heap-increase-capacity (heap-id &optional (capacity 1))
+  (let ((size (heap-size (gethash heap-id *heaps*)))
+        (actual-heap (heap-actual-heap (gethash heap-id *heaps*))))
+    (heap-delete heap-id)
+    (setf (gethash heap-id *heaps*)
+          (list 'HEAP heap-id size (make-array (+ (length actual-heap)
+                                                  capacity)
+                                               :initial-element nil)))
+    (copy-array actual-heap (heap-actual-heap (gethash heap-id *heaps*)))))
+
+
+
+;;; Copies the content of an array onto another.
+(defun copy-array (original copy &optional (start 0))
+  (cond ((and (< start (length original))
+              (>= (length copy) (length original)))
+         (setf (aref copy start) (aref original start))
+         (copy-array original copy (+ start 1)))
+        (T nil)))
+
+
+
 ;;; Access function for a heap-rep.
 (defun heap-id (heap-rep)
   (cond ((equal (first heap-rep)
@@ -284,7 +307,8 @@
          (heap-decrease-key heap-id
                             (- (heap-size (gethash heap-id *heaps*)) 1)
                             k))
-        (T (error "HEAP FULL ERROR"))))
+        (T (heap-increase-capacity heap-id)
+           (heap-insert heap-id k v))))
 
 
 
