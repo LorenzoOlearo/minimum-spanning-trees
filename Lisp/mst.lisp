@@ -643,10 +643,21 @@
                        (T nil)))
              *previous*)
     (stable-sort (stable-sort acc
-                              #'STRING< :KEY
-                              #'(lambda (arc)
-                                  (write-to-string (third arc))))
+                              #'LEXICOGRAPHIC< :KEY
+                              #'THIRD)
                  #'< :KEY #'FOURTH)))
+
+
+
+(defun lexicographic< (a b)
+  (cond ((and (realp a) (realp b))
+         (< a b))
+        (T (string< (if (realp a)
+                        (write-to-string a)
+                        a)
+                    (if (realp b)
+                        (write-to-string b)
+                        b)))))
 
 
 
