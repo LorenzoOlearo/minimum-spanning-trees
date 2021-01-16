@@ -35,7 +35,6 @@ graph/1,
 vertex/2,
 
 
-
 %!	arc(+Graph:graph, +Source:vertex, +Destination:vertex, +Weight:number)
 %
 %	Predicate that is true when Source and Destination are two vertices in
@@ -948,10 +947,14 @@ update_keys(H, [_ | Ns]) :-
 %	@arg Graph the graph object of the action
 
 mst_reset(G) :-
-	graph(G),
 	delete_heap(G),
 	retractall(vertex_key(G, _, _)),
 	retractall(vertex_previous(G, _, _)).
+
+
+% Deletes all the existing graphs' predicates at consult time.
+:- mst_reset(G),
+   delete_graph(G).
 
 
 %%%% end of file -- mst.pl--
