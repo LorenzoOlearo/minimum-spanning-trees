@@ -44,6 +44,9 @@ Note riguardo l'implementazione:
 - Il predicato mst_prim è da utilizzare con grafi non orientati e non
   presenta il supporto ai grafi orientati.
 
+- Ad ogni "consult" del file "mst.pl", tutti i predicati relativi al grafo ed
+  il suo MST vengono rimossi dalla base di conoscenza.
+
 - L'API è in grado di memorizzare mst multipli se e solo se calcolati su
   grafi diversi. Una chiamata a mst_prim su un grafo eliminerà il risultato
   della precedente, indipendentente dal vertice di partenza.
