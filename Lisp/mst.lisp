@@ -56,7 +56,8 @@
            *vertices*)
   (maphash #'(lambda (k v)
                (cond ((equal (second v) graph-id) (remhash k *arcs*))))
-           *arcs*))
+           *arcs*)
+  (prim-reset graph-id))
 
 
 

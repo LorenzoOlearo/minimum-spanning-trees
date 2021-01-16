@@ -57,8 +57,8 @@ new_graph(G) :- assert(graph(G)), !.
 
 %!	delete_graph(+Graph:graph) is det
 %
-%	Predicate that retracts all arc/4, vertex/2 and graph/1 associated with
-%	graph form the knowledge base <br>
+%	Predicate that retracts all arc/4, vertex/2, graph/1, vertex_key/3,
+%	vertex_previous/3 associated with graph form the knowledge base <br>
 %	The predicate is always true
 %
 %	@arg Graph graph object of the action
@@ -66,7 +66,8 @@ new_graph(G) :- assert(graph(G)), !.
 delete_graph(G) :-
 	retractall(arc(G, _, _, _)),
 	retractall(vertex(G, _)),
-	retractall(graph(G)).
+	retractall(graph(G)),
+	mst_reset(G).
 
 
 %!	new_vertex(+Graph:graph, +Vertex:term) is semidet
