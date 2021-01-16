@@ -519,7 +519,7 @@
                                      (heap-insert graph-id inf (third v)))))
                            (T nil)))
                  (graph-vertices graph-id))
-         (mst-prim-recurse graph-id))
+         (mst-prim-recurse graph-id source-id))
         (T (error "GRAPH MISMATCH"))))
 
 
@@ -527,8 +527,14 @@
 
 ;;; Support function for mst-prim.
 ;;; Executes the recursively the iterating part of the algorithm.
-(defun mst-prim-recurse (graph-id)
-  (cond ((heap-not-empty graph-id)
+(defun mst-prim-recurse (graph-id source-id)
+  (cond ((and (heap-not-empty graph-id)
+              (or (gethash (list 'PREVIOUS
+                                 graph-id
+                                 (second (heap-head graph-id)))
+                           *previous*)
+                  (equal (second (heap-head graph-id))
+                         source-id)))
          (let ((minimum (heap-extract graph-id)))
            (setf (gethash (list 'VISITED graph-id (second minimum))
                           *visited*)
@@ -572,8 +578,9 @@
                                           (fifth arc))))
                              (T nil)))
                    (graph-vertex-neighbors graph-id (second minimum))))
-         (mst-prim-recurse graph-id))
-        (T nil)))
+         (mst-prim-recurse graph-id source-id))
+        ((heap-delete graph-id)
+         nil)))
 
 
 
@@ -696,7 +703,7 @@
 
 ;;; Create a graph reading arcs from a file or adds the arcs to the graph
 ;;; if already exixsting
-(defun read-graph (graph-id file-name)
+(defun read-graph-from-csv (graph-id file-name)
   (new-graph graph-id)
   (with-open-file (in file-name :direction :input :if-does-not-exist :error)
     (new-arcs-from graph-id in)))
