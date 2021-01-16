@@ -453,14 +453,16 @@
 ;;; heap-actual-heap \n\n
 ;;; heap-id's entry in *heaps*
 (defun heap-print (heap-id)
-  (format t "HEAP-ID:~t~a~%" heap-id)
-  (format t "HEAP-SIZE:~t~a~%" (third (gethash heap-id *heaps*)))
-  (format t "HEAP-ACTUAL-HEAP:~%~t~a~%~%" (fourth (gethash heap-id *heaps*)))
-  (format t
-          "*heaps* entry for ~a:~%~a =~{~t~a~}"
-          heap-id
-          heap-id
-          (gethash heap-id *heaps*)))
+  (cond ((gethash heap-id *heaps*)
+         (format t "HEAP-ID:~t~a~%" heap-id)
+         (format t "HEAP-SIZE:~t~a~%" (third (gethash heap-id *heaps*)))
+         (format t "HEAP-ACTUAL-HEAP:~%~t~a~%~%" (fourth (gethash heap-id
+                                                                  *heaps*)))
+         (format t
+                 "*heaps* entry for ~a:~%~a =~{~t~a~}"
+                 heap-id
+                 heap-id
+                 (gethash heap-id *heaps*)))))
 
 
 
