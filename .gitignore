@@ -1,3 +1,5 @@
 *.csv
 *.ods
 *.ods#
+*.html
+*.css
