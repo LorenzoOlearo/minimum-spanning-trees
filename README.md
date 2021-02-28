@@ -36,8 +36,8 @@ The API is tested and correctly executed with the following interpreters:
   * `sbcl 2.1.1` (ArchLinux and Windows 10)
 
 
-
 ### Features 
+
 #### Multiple MSTs
 The API is capable of keeping in memory multiples MST as long as the are 
 computed on graphs with differents IDs.
@@ -63,6 +63,7 @@ All arcs are then stored into the `*arcs*` hashtable in the form
 
 
 ### Implementation notes
+
 #### Graphs
 The API only supports non-oriented graphs, the relationship between two nodes is
 represented with a sole arc instead of one for each direction for memory
@@ -144,3 +145,62 @@ graphs, loading first `demo.lisp` is required.
 
 
 ## Prolog
+
+### Loading
+The entire API can be loaded from `swipl` with
+
+``` prolog
+?- consult('mst.pl').
+
+true.
+```
+
+The API is tested and correctly executed with `swipl 8.2.3` on ArchLinux and
+`swipl 8.2.1` on Windows 10
+
+### Documentation (`pldoc`)
+All the comments in the code are written following the swipl's `pldoc`
+specification, the `pldoc` documentation of the prolog project can be generated
+with the query 
+
+`:- doc_save('mst.pl', [doc_root('./doc')])`
+
+
+### Implementation notes
+
+#### Multiple MSTs
+The API is capable of keeping in memory multiples MST as long as the are 
+computed on graphs with differents IDs. A query with the predicate `mst_prim`
+will retract the result of the previous one if computed on the same graph,
+indepently from the source vertex.
+
+#### Arcs representation
+The implementation supports both oriented and non-oriented graphs with the only
+difference being in the predicate `vertex_neighbors` and `adjs` aimed to
+non-oriented graphs. The corresponding *oriented* predicates
+`vertex_neighbors_oriented` and `adj_oriented` are provided. It was decided to
+make the difference in the search for adjacent and non adjacent vertices instead
+of using two arcs between two vertices to represent a non-direct one. This
+implies that if the arc `(graph, a, b, 1)` is in the knowledge base, the query
+`:- (graph, b, a, 1)` will fail while appearing as results of the predicates
+`vertex_neighbors` and `adjs`.
+
+#### mst_prim
+The predicate `mst_prim` is intented to be used with non-oriented graphs and
+does not support oriented ones.
+
+
+#### Consult
+At each `consult` of `mst.pl`, each and every predicate in the knowledge base
+will be removed.
+
+#### Read graphs from CSV files
+In order to allow loading graphs from CSV files, the predicate `read_graphs/2`
+and `read_graph/3` are provided. The first is intended to be used with tab
+separated files with the other allow for the ASCII separator to be specified as
+an argument.
+
+
+### Demo
+In order to stress test the API, under `/prolog/benchmarks` are provided three
+graphs in CSV notation each with 10K, 50K and 500K arcs. 
