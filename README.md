@@ -3,24 +3,30 @@
 
 The project is divided into two implementation of the same Prim's algorithm, one
 in Common Lisp while the other in Prolog.
-
-  * [Common Lisp](#common-lisp)
-    + [Loading](#loading)
-    + [Features](#features)
-      - [Multiple MSTs](#multiple-msts)
-      - [Speed optimized](#speed-optimized)
-      - [Read graphs from csv files](#read-graphs-from-csv-files)
-    + [Implementation notes](#implementation-notes)
-      - [Graphs](#graphs)
-      - [Indices](#indices)
-      - [New Arc](#new-arc)
-      - [Modify Key](#modify-key)
-      - [Extended functions](#extended-functions)
-    + [Demo](#demo)
-  * [Prolog](#prolog)
-
-* [Credits](#credits)
-
+  
+- [Common Lisp](#common-lisp)
+  * [Loading](#loading)
+  * [Features](#features)
+    + [Multiple MSTs](#multiple-msts)
+    + [Speed optimized](#speed-optimized)
+    + [Read graphs from csv files](#read-graphs-from-csv-files)
+  * [Implementation notes](#implementation-notes)
+    + [Graphs](#graphs)
+    + [Indices](#indices)
+    + [Modify key](#modify-key)
+    + [New arcs](#new-arcs)
+    + [Extended functions](#extended-functions)
+  * [Demo](#demo)
+- [Prolog](#prolog)
+  * [Loading](#loading-1)
+  * [Documentation (`pldoc`)](#documentation---pldoc--)
+  * [Implementation notes](#implementation-notes-1)
+    + [Multiple MSTs](#multiple-msts-1)
+    + [Arcs representation](#arcs-representation)
+    + [mst_prim](#mst-prim)
+    + [Consult](#consult)
+    + [Read graphs from CSV files](#read-graphs-from-csv-files)
+  * [Demo](#demo-1)
 
 
 ## Common Lisp 
