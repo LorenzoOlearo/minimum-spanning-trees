@@ -5,7 +5,7 @@
 
 
 % Load the Swipl's library that parses and generates CSV data
-use_module(library(csv)).
+:- use_module(library(csv)).
 
 
 
