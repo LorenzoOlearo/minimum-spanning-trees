@@ -1,5 +1,8 @@
-# Minimum Spanning Trees
+# Minimum Spanning Trees - *heap heap hooray*
 ### January 2021 Project (E1P), Programming Languages Academic Year 2020-2021
+
+The project is divided into two implementation of the same Prim's algorithm, one
+in Common Lisp while the other in Prolog.
 
   * [Common Lisp](#common-lisp)
     + [Loading](#loading)
@@ -10,12 +13,13 @@
     + [Implementation notes](#implementation-notes)
       - [Graphs](#graphs)
       - [Indices](#indices)
+      - [New Arc](#new-arc)
       - [Modify Key](#modify-key)
       - [Extended functions](#extended-functions)
     + [Demo](#demo)
+  * [Prolog](#prolog)
 
 * [Credits](#credits)
-* [Bibliography](#bibliography)
 
 
 
@@ -68,9 +72,20 @@ optimization purposes.
 A hash-table `*indices*` is used to store the indices of the elements contained
 in the array representing the min-heap.
 
-#### Modify Key
+#### Modify key
 As of specific and as not needed, the function modify-key is not implemented,
 only the function `DECREASE-KEY` is used.
+
+#### New arcs
+The function `NEW-ARC` creates an arc between two vertices if and only if these
+are part of the function specified graph.
+The arc's weight it's not part of its hashtable key, hence, creating an arc
+using the function `NEW-ARC` when already present but with different wieght will
+replace the existing one with the newly created.
+Due to the fact that to represent the relation between two vertices only one arc
+with the form `(ARC graph-id v-id u-id weight)` it's used, creating the same arc
+with `NEW-ARC` but while inverting `v-id` and `u-id` will replace the existing
+arc with the newly created one.
 
 #### Extended functions
 The heap implementation allow searching on unique keys different from the order
@@ -126,3 +141,6 @@ In order to stress test the API, under `/Lisp/benchmarks` are provided three
 graphs in CSV notation each with 10K, 50K and 500K arcs. In order to load these
 graphs, loading first `demo.lisp` is required.
 
+
+
+## Prolog
